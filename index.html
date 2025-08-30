@@ -8,7 +8,7 @@
   :root{--blue:#0070ba;--bg:#f7f7f9}
   *{box-sizing:border-box}
   body{font-family:system-ui,Arial,sans-serif;background:var(--bg);margin:0;padding:24px;line-height:1.6;color:#111}
-  h1,h2{margin:0 0 .6rem}
+  h1,h2,h3{margin:0 0 .6rem}
   p{margin:.25rem 0 .9rem}
   .row{display:flex;gap:.6rem;flex-wrap:wrap;margin:.4rem 0 1rem}
   .btn{display:inline-block;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:600;border:1px solid #dcdce0;background:#fff;cursor:pointer}
@@ -17,13 +17,13 @@
   .btn.primary[disabled]{opacity:.55;cursor:not-allowed}
   .muted{color:#666;font-size:.95rem}
   .card{background:#fff;border:1px solid #e6e6ea;border-radius:14px;padding:16px;margin-top:16px}
-  input[type=text]{padding:10px 12px;border:1px solid #dcdce0;border-radius:10px;min-width:260px}
-  .ok{color:#0b8f2e}
-  .err{color:#b00020}
+  input[type=text],input[type=email]{padding:10px 12px;border:1px solid #dcdce0;border-radius:10px;min-width:260px}
+  .badge{display:inline-block;padding:.25rem .5rem;border-radius:.5rem;background:#fff1; border:1px solid #ccc; font-size:.85rem}
+  .ok{background:#e9fbe9;border-color:#bfe9bf;color:#164a16}
+  .ko{background:#fff4f4;border-color:#ffd7d7;color:#7b1a1a}
   .enigme{display:none}
   .enigme.active{display:block}
   .hr{height:1px;background:#ececf2;margin:16px 0}
-  .badge{display:inline-block;padding:.25rem .5rem;border-radius:.5rem;background:#eef4ff;border:1px solid #cfe0ff;font-size:.85rem;color:#244}
   footer{margin-top:28px;color:#555;font-size:.9rem}
 </style>
 </head>
@@ -31,202 +31,4 @@
   <header>
     <h1>Jeu de Piste – Schœlcher</h1>
     <p>Munis-toi de papier et crayon, scanne les QR codes et résous les énigmes.</p>
-    <p>Le jeu coûte 10 € — déverrouille l’accès en payant ou avec un code.</p>
-  </header>
-
-  <!-- CONTROLES D’ACCES -->
-  <section class="card" id="acces">
-    <h2>Accès au jeu</h2>
-    <div class="row">
-      <!-- 1) Ton lien PayPal NCP (ouvre la page de paiement dans un nouvel onglet) -->
-      <a class="btn primary" target="_blank" rel="noopener"
-         href="https://www.paypal.com/ncp/payment/GLM2FB7ERYXKQ">💳 Payer 10 € (PayPal)</a>
-
-      <!-- 2) Champ Code -->
-      <input type="text" id="codeInput" placeholder="Entrer un code (si reçu après paiement)" />
-      <button class="btn" id="btnValiderCode">Valider le code</button>
-
-      <!-- 3) Bouton Commencer (bloqué tant que pas payé/code) -->
-      <button class="btn primary" id="btnCommencer" disabled>Commencer le jeu</button>
-    </div>
-    <p class="muted" id="etatAcces">Statut : <span class="badge" id="badge">verrouillé</span></p>
-
-    <div class="hr"></div>
-
-    <!-- 4) Optionnel : Bouton PayPal "automatique" via SDK (à activer quand tu auras un client-id) -->
-    <details>
-      <summary>⚙️ Intégration PayPal automatique (facultatif)</summary>
-      <p class="muted">Si tu as un <strong>Client ID</strong> PayPal, colle-le dans le code (variable <code>PAYPAL_CLIENT_ID</code>) et enlève le <code>display:none</code> du conteneur ci-dessous. Le paiement approuvé déverrouillera automatiquement l’accès.</p>
-      <div id="paypal-container" style="display:none;margin-top:8px;">
-        <div id="paypal-button-container"></div>
-      </div>
-    </details>
-  </section>
-
-  <!-- CARTE (REMPLACE l’iframe par la tienne) -->
-  <section class="card">
-    <h2>Carte du parcours</h2>
-    <p class="muted">Aperçu de la zone de jeu.</p>
-    <!-- TODO: Remplace l’URL d’iframe par TA carte (Google Maps, uMap, OpenStreetMap, etc.) -->
-    <iframe
-      src="https://www.openstreetmap.org/export/embed.html?bbox=-61.12%2C14.62%2C-61.05%2C14.67&layer=mapnik"
-      style="border:1px solid #ccd; width:100%; height:320px; border-radius:12px;"
-      loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-    <div class="row">
-      <!-- TODO: change ce lien “Voir en plein écran” par le lien de TA carte -->
-      <a class="btn" target="_blank" rel="noopener"
-         href="https://www.openstreetmap.org/relation/8751406">Voir la carte en plein écran</a>
-    </div>
-  </section>
-
-  <!-- ENIGMES (REMPLACE LE TEXTE PAR TES ENIGMES RÉELLES) -->
-  <section id="bloc-enigmes" class="card" style="display:none;">
-    <h2>Énigmes</h2>
-    <p class="muted">Défile et résous dans l’ordre, ou utilise tes QR codes pour pointer directement la bonne énigme.</p>
-
-    <!-- Énigme 1 -->
-    <article id="enigme1" class="enigme active">
-      <h3>Énigme 1</h3>
-      <!-- TODO: Mets ICI ton texte d’énigme 1 -->
-      <p><em>(Remplace ce bloc par ton énigme 1)</em></p>
-      <div class="row">
-        <a class="btn" href="#enigme2" onclick="showEnigme('enigme2')">Aller à l’Énigme 2</a>
-      </div>
-    </article>
-
-    <!-- Énigme 2 -->
-    <article id="enigme2" class="enigme">
-      <h3>Énigme 2</h3>
-      <!-- TODO: Mets ICI ton texte d’énigme 2 -->
-      <p><em>(Remplace ce bloc par ton énigme 2)</em></p>
-      <div class="row">
-        <a class="btn" href="#enigme1" onclick="showEnigme('enigme1')">Retour Énigme 1</a>
-        <a class="btn" href="#enigme3" onclick="showEnigme('enigme3')">Aller à l’Énigme 3</a>
-      </div>
-    </article>
-
-    <!-- Énigme 3 -->
-    <article id="enigme3" class="enigme">
-      <h3>Énigme 3</h3>
-      <!-- TODO: Mets ICI ton texte d’énigme 3 -->
-      <p><em>(Remplace ce bloc par ton énigme 3)</em></p>
-      <div class="row">
-        <a class="btn" href="#enigme2" onclick="showEnigme('enigme2')">Retour Énigme 2</a>
-        <a class="btn" href="#enigme4" onclick="showEnigme('enigme4')">Aller à l’Énigme 4</a>
-      </div>
-    </article>
-
-    <!-- Énigme 4 -->
-    <article id="enigme4" class="enigme">
-      <h3>Énigme 4</h3>
-      <!-- TODO: Mets ICI ton texte d’énigme 4 -->
-      <p><em>(Remplace ce bloc par ton énigme 4)</em></p>
-      <div class="row">
-        <a class="btn" href="#enigme3" onclick="showEnigme('enigme3')">Retour Énigme 3</a>
-        <a class="btn" href="#fin" onclick="showEnigme('fin')">Terminer</a>
-      </div>
-    </article>
-
-    <!-- Fin -->
-    <article id="fin" class="enigme">
-      <h3>Bravo 🎉</h3>
-      <p>Tu as terminé le parcours !</p>
-      <a class="btn" href="#" onclick="window.scrollTo({top:0,behavior:'smooth'})">Retour à l’accueil</a>
-    </article>
-  </section>
-
-  <footer>
-    <span class="muted">Astuce : tu peux remplacer/ajouter autant d’énigmes que tu veux en dupliquant les blocs ci-dessus.</span>
-  </footer>
-
-  <!-- PayPal SDK (OPTIONNEL – seulement si tu as un client-id) -->
-  <script>
-    // ==========================
-    // CONFIG À ADAPTER
-    // ==========================
-    const ACCESS_CODE = "SCH-2025-OK"; // ⬅️ TON code à donner au client après paiement (modifiable)
-    const PAYPAL_CLIENT_ID = "";       // ⬅️ Mets ici ton client-id PayPal PLUS TARD si tu veux l’auto-déverrouillage
-    const PAYPAL_AMOUNT = "10.00";     // Montant
-
-    // État d’accès (conservé dans localStorage pour ne pas redemander)
-    const LS_KEY = "jp_schoelcher_unlocked_v1";
-
-    const badge = document.getElementById("badge");
-    const btnCommencer = document.getElementById("btnCommencer");
-    const blocEnigmes = document.getElementById("bloc-enigmes");
-    const codeInput = document.getElementById("codeInput");
-    const btnValiderCode = document.getElementById("btnValiderCode");
-
-    // Init à l’ouverture
-    const unlocked = localStorage.getItem(LS_KEY) === "1";
-    setAccess(unlocked);
-
-    btnValiderCode.addEventListener("click", () => {
-      const v = (codeInput.value || "").trim();
-      if (!v) return alert("Entre ton code.");
-      if (v === ACCESS_CODE) {
-        setAccess(true);
-        alert("Code valide ✅ Accès déverrouillé.");
-      } else {
-        alert("Code invalide ❌");
-      }
-    });
-
-    btnCommencer.addEventListener("click", () => {
-      if (btnCommencer.disabled) return;
-      document.getElementById("bloc-enigmes").style.display = "block";
-      showEnigme("enigme1");
-      document.getElementById("bloc-enigmes").scrollIntoView({behavior:"smooth"});
-    });
-
-    function setAccess(ok){
-      if (ok) {
-        localStorage.setItem(LS_KEY, "1");
-        btnCommencer.disabled = false;
-        badge.textContent = "déverrouillé";
-        badge.style.background = "#e9fbe9"; badge.style.borderColor="#bfe9bf"; badge.style.color="#164a16";
-        blocEnigmes.style.display = "block"; // (affiche le bloc; l’utilisateur clique ensuite sur Commencer)
-      } else {
-        localStorage.removeItem(LS_KEY);
-        btnCommencer.disabled = true;
-        badge.textContent = "verrouillé";
-        badge.style.background = "#fff4f4"; badge.style.borderColor="#ffd7d7"; badge.style.color="#7b1a1a";
-        blocEnigmes.style.display = "none";
-      }
-    }
-
-    // Navigation entre énigmes (ancres / QR)
-    function showEnigme(id){
-      document.querySelectorAll(".enigme").forEach(e => e.classList.remove("active"));
-      const el = document.getElementById(id);
-      if (el){ el.classList.add("active"); location.hash = id; }
-    }
-    window.showEnigme = showEnigme;
-
-    // Optionnel : activer le PayPal SDK si un client-id est présent
-    if (PAYPAL_CLIENT_ID) {
-      document.getElementById("paypal-container").style.display = "block";
-      const s = document.createElement("script");
-      s.src = "https://www.paypal.com/sdk/js?client-id="+encodeURIComponent(PAYPAL_CLIENT_ID)+"&currency=EUR";
-      s.onload = () => {
-        if (window.paypal && paypal.Buttons) {
-          paypal.Buttons({
-            createOrder: (data, actions) => actions.order.create({
-              purchase_units: [{ amount: { value: PAYPAL_AMOUNT } }]
-            }),
-            onApprove: async (data, actions) => {
-              try {
-                await actions.order.capture();
-              } catch(e) {/* sur GitHub Pages côté client, c’est ok */}
-              setAccess(true); // ✅ déverrouille automatiquement après paiement approuvé
-              alert("Paiement approuvé ✅ Accès déverrouillé.");
-            }
-          }).render("#paypal-button-container");
-        }
-      };
-      document.body.appendChild(s);
-    }
-  </script>
-</body>
-</html>
-
+    <p>Le jeu coût
