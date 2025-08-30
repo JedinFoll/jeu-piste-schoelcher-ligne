@@ -1,51 +1,48 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Jeu de Piste - Schœlcher</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    :root{--blue:#0070ba}
+    body{font-family:system-ui,Arial,sans-serif;margin:0;padding:24px;line-height:1.6;background:#f7f7f9}
+    h1{margin:0 0 8px}
+    p{margin:0 0 14px}
+    .row{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0 20px}
+    .btn{display:inline-block;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:600;border:1px solid #ddd;background:#fff;transition:.2s}
+    .btn:hover{background:#eee}
+    .btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+    .btn.primary:hover{background:#005b95}
+    .muted{color:#666;font-size:14px}
+    .card{background:#fff;border:1px solid #e6e6ea;border-radius:12px;padding:16px;margin-top:20px}
+  </style>
 </head>
 <body>
-  <header>
-    <h1>Bienvenue à Schœlcher !</h1>
-    <p>Munis-toi de papier et crayon 📝, scanne les QR codes et résous les énigmes.</p>
-    <p>Le jeu coûte <strong>10 €</strong>. Tu peux utiliser un <em>code gratuit</em> si tu en as un.</p>
-  </header>
+  <h1>Bienvenue à Schœlcher !</h1>
+  <p>Munis-toi de papier et crayon, scanne les QR codes et résous les énigmes.</p>
+  <p>Le jeu coûte 10 €. Tu peux utiliser un code gratuit si tu en as un.</p>
 
-  <main>
-    <!-- Paiement fictif -->
-    <section id="paymentSection">
-      <button onclick="payGame()">Payer 10 €</button>
-      <p>OU</p>
-      <input type="text" id="codeInput" placeholder="Code d’accès" />
-      <button onclick="useCode()">Valider le code</button>
-    </section>
+  <div class="row">
+    <!-- ✅ Bouton PayPal cliquable -->
+    <a class="btn primary" href="https://www.paypal.com/ncp/payment/GLM2FB7ERYXKQ" target="_blank" rel="noopener">Payer 10 € avec PayPal</a>
 
-    <!-- Lancement du jeu -->
-    <section id="startSection" style="display: none;">
-      <button onclick="startGame()">Commencer le jeu</button>
-    </section>
+    <!-- ✅ Bouton valider code -->
+    <a class="btn" href="valider-code.html">Valider un code</a>
 
-    <!-- Chronomètre -->
-    <p id="chrono" style="display: none;">Temps : 0s</p>
+    <!-- ✅ Bouton commencer le jeu -->
+    <a class="btn" href="enigme1.html">Commencer le jeu</a>
+  </div>
 
-    <!-- Carte -->
-    <div id="carte-container" style="display:none;">
-      <h2>Carte de Schœlcher</h2>
-      <img src="assets/carte_schoelcher.jpg" alt="Carte de Schœlcher" width="100%" />
+  <p class="muted">Après paiement, reviens ici pour accéder aux énigmes.</p>
+
+  <div class="card">
+    <h2>Carte de Schœlcher</h2>
+    <div class="row">
+      <a class="btn" href="https://www.openstreetmap.org/relation/8751406" target="_blank" rel="noopener">Voir la carte</a>
+      <a class="btn" href="scanner.html">Scanner le QR Code</a>
     </div>
-    <button onclick="toggleCarte()">Voir la carte</button>
-
-    <!-- Zone de jeu (affichage des énigmes) -->
-    <section id="gameZone" style="display: none;">
-      <!-- contenu des énigmes ici -->
-    </section>
-
-    <!-- Bouton pour passer à l’énigme suivante (QR code simulé) -->
-    <button id="scannerButton" onclick="nextEnigme()" style="display: none;">Scanner le QR Code</button>
-  </main>
-
-  <script src="main.js"></script>
+  </div>
 </body>
 </html>
+
