@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="fr">
 <head>
@@ -22,7 +23,6 @@
     margin:0; padding:24px; line-height:1.6; color:var(--ink);
   }
 
-  /* Bandeau aventurier */
   .hero{
     background: var(--marron-light);
     border:3px solid var(--frame);
@@ -39,7 +39,6 @@
   }
   .hero p{margin:.25rem 0 0; color:#f0e6d2}
 
-  /* Cartes */
   .card{
     background: var(--parch);
     border: 2px solid var(--frame);
@@ -52,7 +51,6 @@
   h2{font-family:'Alfa Slab One', serif; color:var(--marron-dark)}
   .row{display:flex;gap:.6rem;flex-wrap:wrap;margin:.4rem 0 1rem}
 
-  /* Boutons */
   .btn{
     display:inline-block; padding:10px 16px; border-radius:8px;
     text-decoration:none; font-weight:700;
@@ -65,14 +63,12 @@
   .btn.primary{ background:var(--marron-light); color:#fffbea; border-color:var(--marron-dark) }
   .btn.primary:hover{ background:var(--marron-dark) }
 
-  /* Inputs */
   input[type=text]{padding:10px 12px;border:2px solid var(--frame);border-radius:10px;min-width:220px;background:#fff;color:#2d1a0a;}
 
   .badge{display:inline-block;padding:.25rem .5rem;border-radius:.5rem;border:2px solid #ccc;font-size:.85rem}
   .ok{background:#e9fbe9;border-color:#bfe9bf;color:#164a16}
   .ko{background:#fff0f0;border-color:#f2c1c1;color:#7b1a1a}
 
-  /* Carte */
   .map-wrap{position:relative;width:100%;overflow:auto;background:#faf3e0;border:2px solid #a97442;border-radius:12px}
   .map-frame{width:100%;height:min(80vh,700px);display:flex;align-items:center;justify-content:center}
   .map-img{max-height:100%;max-width:100%;display:block; border-radius:8px}
@@ -83,7 +79,6 @@
 </style>
 </head>
 <body>
-  <!-- Bandeau -->
   <div class="hero">
     <h1>Jeu de Piste – Schœlcher</h1>
     <p>Munis-toi de papier et crayon, scanne les QR codes et résous les énigmes.</p>
@@ -92,17 +87,26 @@
   <!-- Accès -->
   <section class="card" id="acces">
     <h2>Accès au jeu</h2>
+    
+    <!-- Paiement -->
     <div class="row">
       <a class="btn primary" target="_blank" rel="noopener"
          href="https://www.paypal.com/ncp/payment/GLM2FB7ERYXKQ">💳 Payer 10 € (PayPal)</a>
-      <input type="text" id="codeInput" placeholder="Entrer le code d’accès" />
-      <button class="btn" id="btnValiderCode">Valider le code</button>
     </div>
+    
+    <!-- Envoi SMS -->
     <div class="row">
       <input type="text" id="payerName" value="INARI" readonly />
       <input type="text" id="payerTxn" placeholder="N° de paiement PayPal" />
       <button class="btn" id="btnEnvoyerSMS">Envoyer la preuve par SMS</button>
     </div>
+
+    <!-- Entrée du code -->
+    <div class="row">
+      <input type="text" id="codeInput" placeholder="Entrer le code d’accès reçu" />
+      <button class="btn" id="btnValiderCode">Valider le code</button>
+    </div>
+
     <p class="muted" id="txtValidity"></p>
     <p><strong id="txtStart"></strong></p>
     <p>Statut : <span id="badge" class="badge ko">verrouillé</span></p>
@@ -157,7 +161,8 @@
   const ACCESS_CODE = "SCHOELCHER-10";
   const LS_KEY = "jp_schoelcher_marron";
 
-  const TEXT_VALIDITY   = "Le jeu peut démarrer après réception du code. Ce code est valable 1 semaine.";
+  // Texte explicatif avec validité
+  const TEXT_VALIDITY   = "Pour recevoir le code, envoie ton numéro de paiement PayPal par SMS. Tu recevras alors le code d’accès à entrer ci-dessus (valable 1 semaine). Une fois validé, appuie sur « Commencer le jeu » pour démarrer l’aventure.";
   const TEXT_START      = "Le jeu commence après avoir appuyé sur « Commencer le jeu ».";
   const TEXT_VISIBILITY = "Seule l’Énigme 1 est visible au départ. Pour débloquer les suivantes, scanne les bons QR codes dans l’ordre.";
 
