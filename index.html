@@ -42,7 +42,6 @@
   <header>
     <h1>Jeu de Piste – Schœlcher</h1>
     <p>Munis-toi de papier et crayon, scanne les QR codes et résous les énigmes.</p>
-    <p>Le jeu coûte 10 € — l’accès s’active après paiement ou code d’accès.</p>
   </header>
 
   <!-- ACCÈS -->
@@ -58,12 +57,15 @@
 
     <!-- Preuve de paiement : SMS uniquement -->
     <div class="row">
-      <!-- Nom toujours fixé à INARI (non éditable) -->
+      <!-- Nom toujours “INARI” (non éditable) -->
       <input type="text" id="payerName" value="INARI" readonly />
       <input type="text" id="payerTxn"  placeholder="N° de paiement PayPal" />
       <button class="btn" id="btnEnvoyerSMS">Envoyer la preuve par SMS</button>
     </div>
     <p class="muted">Le SMS démarre par <strong>INARI</strong> pour que l’organisateur l’identifie.</p>
+
+    <p class="muted" id="txtValidity"></p>
+    <p class="muted"><strong id="txtStart"></strong></p>
 
     <p class="muted">Statut : <span id="badge" class="badge ko">verrouillé</span></p>
     <div class="hr"></div>
@@ -72,7 +74,6 @@
       <button class="btn primary" id="btnCommencer" disabled>Commencer le jeu</button>
       <button class="btn" id="btnScanner" disabled>Scanner le QR code</button>
     </div>
-    <p class="muted">Seule l’Énigme 1 est visible au départ. Chaque énigme suivante s’affiche après le scan du bon QR.</p>
   </section>
 
   <!-- TA CARTE -->
@@ -93,6 +94,8 @@
   <!-- ÉNIGMES -->
   <section id="bloc-enigmes" class="card" style="display:none;">
     <h2>Énigmes</h2>
+    <p class="muted" id="txtVisibility"></p>
+
     <article id="enigme1" class="enigme">
       <h3>Énigme 1</h3>
       <p><em>(Ton ÉNIGME 1 ici)</em></p>
@@ -140,15 +143,20 @@
   </div>
 
   <footer>
-    <span class="muted">⚠️ Pense à mettre tes vraies énigmes et codes QR dans la CONFIG ci-dessous.</span>
+    <span class="muted">Tu peux modifier les phrases clés (validité, démarrage, visibilité) dans la CONFIG ci-dessous.</span>
   </footer>
 
   <script>
-    /* ======================= CONFIG ======================= */
-    const CONTACT_PHONE = "+596696327693";          // ← Ton numéro
-    const ACCESS_CODE   = "SCHOELCHER-10";          // ← Code que tu donnes après vérif
-    const LS_KEY        = "jp_schoelcher_unlocked_v3";
+    /* ======================= CONFIG À PERSONNALISER ======================= */
+    const CONTACT_PHONE = "+596696327693";          // ← Ton numéro pour le SMS
+    const ACCESS_CODE   = "SCHOELCHER-10";          // ← Code d’accès (modifiable quand tu veux)
+    const LS_KEY        = "jp_schoelcher_unlocked_v4";
 
+    // Textes configurables
+    const TEXT_VALIDITY   = "Le jeu peut démarrer après réception du code. Ce code est valable 1 semaine.";
+    const TEXT_START      = "Le jeu commence après avoir appuyé sur « Commencer le jeu ».";
+    const TEXT_VISIBILITY = "Seule l’Énigme 1 est visible au départ. Pour débloquer les suivantes, tu dois scanner les bons QR codes dans l’ordre.";
+    
     // Suite attendue des QR (valeurs EXACTES encodées dans tes QR)
     const QR_FLOW = [
       { nextId:"enigme2", value:"ENIGME-2" },
@@ -156,7 +164,12 @@
       { nextId:"enigme4", value:"ENIGME-4" },
       { nextId:"fin",     value:"FIN" }
     ];
-    /* ===================================================== */
+    /* ===================== FIN CONFIG – NE RIEN CASSEZ ==================== */
+
+    // Injecte les textes configurables
+    document.getElementById("txtValidity").innerText = TEXT_VALIDITY;
+    document.getElementById("txtStart").innerText = TEXT_START;
+    document.getElementById("txtVisibility").innerText = TEXT_VISIBILITY;
 
     // Références
     const badge = document.getElementById("badge");
@@ -183,9 +196,9 @@
     btnCommencer.addEventListener("click", () => {
       if (btnCommencer.disabled) return;
       blocEnigmes.style.display = "block";
-      showOnly("enigme1");
+      showOnly("enigme1");                 // seule la 1 visible au départ
       blocEnigmes.scrollIntoView({behavior:"smooth"});
-      btnScanner.disabled = false;
+      btnScanner.disabled = false;         // on autorise le scan
     });
 
     btnValiderCode.addEventListener("click", () => {
@@ -199,7 +212,7 @@
       }
     });
 
-    // SMS preuve (Nom=INARI forcé)
+    // Envoyer la preuve par SMS (Nom=INARI forcé)
     btnEnvoyerSMS.addEventListener("click", () => {
       const name = payerName.value; // toujours "INARI"
       const txn  = (payerTxn.value||"").trim();
@@ -314,6 +327,7 @@
       }
     }
 
+    // Carte : rotation manuelle si besoin
     let rot = 0;
     rotateLeft.addEventListener("click", ()=>{
       rot = (rot - 90) % 360;
