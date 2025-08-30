@@ -7,7 +7,7 @@
   <style>
     :root{--blue:#0070ba}
     body{font-family:system-ui,Arial,sans-serif;margin:0;padding:24px;line-height:1.6;background:#f7f7f9}
-    h1{margin:0 0 8px}
+    h1,h2{margin:0 0 12px}
     p{margin:0 0 14px}
     .row{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0 20px}
     .btn{display:inline-block;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:600;border:1px solid #ddd;background:#fff;transition:.2s}
@@ -16,6 +16,9 @@
     .btn.primary:hover{background:#005b95}
     .muted{color:#666;font-size:14px}
     .card{background:#fff;border:1px solid #e6e6ea;border-radius:12px;padding:16px;margin-top:20px}
+    section{margin:40px 0}
+    .enigme{display:none}
+    .enigme.active{display:block}
   </style>
 </head>
 <body>
@@ -24,14 +27,9 @@
   <p>Le jeu coûte 10 €. Tu peux utiliser un code gratuit si tu en as un.</p>
 
   <div class="row">
-    <!-- ✅ Bouton PayPal cliquable -->
     <a class="btn primary" href="https://www.paypal.com/ncp/payment/GLM2FB7ERYXKQ" target="_blank" rel="noopener">Payer 10 € avec PayPal</a>
-
-    <!-- ✅ Bouton valider code -->
-    <a class="btn" href="valider-code.html">Valider un code</a>
-
-    <!-- ✅ Bouton commencer le jeu -->
-    <a class="btn" href="enigme1.html">Commencer le jeu</a>
+    <a class="btn" href="#code">Valider un code</a>
+    <a class="btn" href="#enigme1" onclick="showEnigme(1)">Commencer le jeu</a>
   </div>
 
   <p class="muted">Après paiement, reviens ici pour accéder aux énigmes.</p>
@@ -40,9 +38,59 @@
     <h2>Carte de Schœlcher</h2>
     <div class="row">
       <a class="btn" href="https://www.openstreetmap.org/relation/8751406" target="_blank" rel="noopener">Voir la carte</a>
-      <a class="btn" href="scanner.html">Scanner le QR Code</a>
+      <a class="btn" href="#enigme1" onclick="showEnigme(1)">Scanner le QR Code</a>
     </div>
   </div>
+
+  <!-- Bloc code gratuit -->
+  <section id="code" class="card">
+    <h2>Valider un code gratuit</h2>
+    <input type="text" id="codeInput" placeholder="Entrez votre code" />
+    <button class="btn primary" onclick="validerCode()">Valider</button>
+    <p id="codeMessage" class="muted"></p>
+  </section>
+
+  <!-- Énigmes -->
+  <section id="enigme1" class="enigme card">
+    <h2>Énigme 1</h2>
+    <p>Quel monument emblématique de Schœlcher rend hommage à la liberté retrouvée ?</p>
+    <a class="btn primary" href="#enigme2" onclick="showEnigme(2)">Passer à l'Énigme 2</a>
+  </section>
+
+  <section id="enigme2" class="enigme card">
+    <h2>Énigme 2</h2>
+    <p>En quelle année la commune de Case-Navire a-t-elle pris le nom de Schœlcher ?</p>
+    <a class="btn primary" href="#enigme3" onclick="showEnigme(3)">Passer à l'Énigme 3</a>
+  </section>
+
+  <section id="enigme3" class="enigme card">
+    <h2>Énigme 3</h2>
+    <p>Près de l’hôtel de ville, une fresque célèbre représente un épisode historique. Lequel ?</p>
+    <a class="btn primary" href="#enigme4" onclick="showEnigme(4)">Passer à l'Énigme 4</a>
+  </section>
+
+  <section id="enigme4" class="enigme card">
+    <h2>Énigme 4</h2>
+    <p>Bravo 🎉 Tu es arrivé à la fin de ce jeu de piste ! Reviens à l’accueil pour rejouer.</p>
+    <a class="btn" href="#">Retour à l’accueil</a>
+  </section>
+
+  <script>
+    function showEnigme(num) {
+      document.querySelectorAll(".enigme").forEach(e => e.classList.remove("active"));
+      document.getElementById("enigme"+num).classList.add("active");
+      window.location.hash = "enigme"+num;
+    }
+    function validerCode() {
+      const code = document.getElementById("codeInput").value.trim();
+      const msg = document.getElementById("codeMessage");
+      if(code === "SCH2025"){ 
+        msg.textContent = "✅ Code valide ! Tu peux accéder directement aux énigmes.";
+        showEnigme(1);
+      } else {
+        msg.textContent = "❌ Code invalide.";
+      }
+    }
+  </script>
 </body>
 </html>
-
