@@ -27,8 +27,18 @@
   <p>Le jeu coûte 10 €. Tu peux utiliser un code gratuit si tu en as un.</p>
 
   <div class="row">
-    <a class="btn primary" href="https://www.paypal.com/ncp/payment/GLM2FB7ERYXKQ" target="_blank" rel="noopener">Payer 10 € avec PayPal</a>
+    <!-- ✅ Bouton PayPal relié à TON lien -->
+    <a class="btn primary" 
+       href="https://www.paypal.com/ncp/payment/GLM2FB7ERYXKQ" 
+       target="_blank" 
+       rel="noopener">
+       💳 Payer 10 € avec PayPal
+    </a>
+
+    <!-- ✅ Bouton valider code -->
     <a class="btn" href="#code">Valider un code</a>
+
+    <!-- ✅ Bouton commencer le jeu -->
     <a class="btn" href="#enigme1" onclick="showEnigme(1)">Commencer le jeu</a>
   </div>
 
@@ -60,37 +70,4 @@
   <section id="enigme2" class="enigme card">
     <h2>Énigme 2</h2>
     <p>En quelle année la commune de Case-Navire a-t-elle pris le nom de Schœlcher ?</p>
-    <a class="btn primary" href="#enigme3" onclick="showEnigme(3)">Passer à l'Énigme 3</a>
-  </section>
-
-  <section id="enigme3" class="enigme card">
-    <h2>Énigme 3</h2>
-    <p>Près de l’hôtel de ville, une fresque célèbre représente un épisode historique. Lequel ?</p>
-    <a class="btn primary" href="#enigme4" onclick="showEnigme(4)">Passer à l'Énigme 4</a>
-  </section>
-
-  <section id="enigme4" class="enigme card">
-    <h2>Énigme 4</h2>
-    <p>Bravo 🎉 Tu es arrivé à la fin de ce jeu de piste ! Reviens à l’accueil pour rejouer.</p>
-    <a class="btn" href="#">Retour à l’accueil</a>
-  </section>
-
-  <script>
-    function showEnigme(num) {
-      document.querySelectorAll(".enigme").forEach(e => e.classList.remove("active"));
-      document.getElementById("enigme"+num).classList.add("active");
-      window.location.hash = "enigme"+num;
-    }
-    function validerCode() {
-      const code = document.getElementById("codeInput").value.trim();
-      const msg = document.getElementById("codeMessage");
-      if(code === "SCH2025"){ 
-        msg.textContent = "✅ Code valide ! Tu peux accéder directement aux énigmes.";
-        showEnigme(1);
-      } else {
-        msg.textContent = "❌ Code invalide.";
-      }
-    }
-  </script>
-</body>
-</html>
+    <a class="btn primary" href="#eni
