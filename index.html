@@ -17,7 +17,7 @@
   .btn.primary[disabled]{opacity:.55;cursor:not-allowed}
   .muted{color:#666;font-size:.95rem}
   .card{background:#fff;border:1px solid #e6e6ea;border-radius:14px;padding:16px;margin-top:16px}
-  input[type=text],input[type=email]{padding:10px 12px;border:1px solid #dcdce0;border-radius:10px;min-width:260px}
+  input[type=text],input[type=email]{padding:10px 12px;border:1px solid #dcdce0;border-radius:10px;min-width:240px}
   .badge{display:inline-block;padding:.25rem .5rem;border-radius:.5rem;border:1px solid #ccc;font-size:.85rem}
   .ok{background:#e9fbe9;border-color:#bfe9bf;color:#164a16}
   .ko{background:#fff4f4;border-color:#ffd7d7;color:#7b1a1a}
@@ -56,11 +56,13 @@
       <button class="btn" id="btnValiderCode">Valider le code</button>
     </div>
 
+    <!-- Preuve de paiement : e-mail OU SMS -->
     <div class="row">
       <input type="text"  id="payerName"  placeholder="Nom / Prénom" />
       <input type="email" id="payerEmail" placeholder="Email" />
       <input type="text"  id="payerTxn"   placeholder="N° de paiement PayPal" />
-      <button class="btn" id="btnEnvoyerPreuve">Envoyer la preuve</button>
+      <button class="btn" id="btnEnvoyerPreuve">Envoyer par e-mail</button>
+      <button class="btn" id="btnEnvoyerSMS">Envoyer par SMS</button>
     </div>
 
     <p class="muted">Statut : <span id="badge" class="badge ko">verrouillé</span></p>
@@ -146,8 +148,9 @@
 
   <script>
     /* ======================= CONFIG À PERSONNALISER ======================= */
-    const CONTACT_EMAIL = "ton.email@example.com";   // ← TON email (réception des preuves)
-    const ACCESS_CODE   = "SCHOELCHER-10";           // ← Code que TU donnes après vérif du paiement
+    const CONTACT_EMAIL = "ton.email@example.com";  // ← TON e-mail (réception des preuves)
+    const CONTACT_PHONE = "+596XXXXXXXX";           // ← TON numéro (format international, ex : +596696123456)
+    const ACCESS_CODE   = "SCHOELCHER-10";          // ← Code que TU donnes après vérif du paiement
     const LS_KEY        = "jp_schoelcher_unlocked_v2";
 
     // Suite attendue des QR (valeurs EXACTES encodées dans tes QR)
@@ -168,6 +171,7 @@
     const codeInput = document.getElementById("codeInput");
     const btnValiderCode = document.getElementById("btnValiderCode");
     const btnEnvoyerPreuve = document.getElementById("btnEnvoyerPreuve");
+    const btnEnvoyerSMS = document.getElementById("btnEnvoyerSMS");
     const scanModal = document.getElementById("scanModal");
     const video = document.getElementById("video");
     const qrManual = document.getElementById("qrManual");
@@ -199,10 +203,9 @@
       }
     });
 
+    // Envoyer la preuve par e-mail
     btnEnvoyerPreuve.addEventListener("click", () => {
-      const name = (document.getElementById("payerName").value||"").trim();
-      const email= (document.getElementById("payerEmail").value||"").trim();
-      const txn  = (document.getElementById("payerTxn").value||"").trim();
+      const {name, email, txn} = getProofInputs();
       if(!txn) return alert("Entre ton N° de paiement PayPal.");
       const subject = encodeURIComponent("Preuve de paiement – Jeu de Piste Schœlcher");
       const body = encodeURIComponent(
@@ -210,6 +213,28 @@
       );
       window.location.href = `mailto:${encodeURIComponent(CONTACT_EMAIL)}?subject=${subject}&body=${body}`;
     });
+
+    // Envoyer la preuve par SMS (ouvre l'app SMS avec un message pré-rempli)
+    btnEnvoyerSMS.addEventListener("click", () => {
+      const {name, email, txn} = getProofInputs();
+      if(!txn) return alert("Entre ton N° de paiement PayPal.");
+      const body = encodeURIComponent(
+        `Preuve paiement – Jeu de Piste Schœlcher\nNom: ${name}\nEmail: ${email}\nPaiement: ${txn}`
+      );
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const href = isIOS
+        ? `sms:${encodeURIComponent(CONTACT_PHONE)}&body=${body}`
+        : `sms:${encodeURIComponent(CONTACT_PHONE)}?body=${body}`;
+      window.location.href = href;
+    });
+
+    function getProofInputs(){
+      return {
+        name : (document.getElementById("payerName").value||"").trim(),
+        email: (document.getElementById("payerEmail").value||"").trim(),
+        txn  : (document.getElementById("payerTxn").value||"").trim()
+      };
+    }
 
     // Scanner (modal)
     let stream, detector;
@@ -282,46 +307,4 @@
     function unlock(id){
       const list = getUnlocked();
       if(!list.includes(id)) list.push(id);
-      setUnlocked(list);
-      showOnly(id);
-    }
-
-    // Affiche uniquement jusqu’à l’énigme demandée
-    function showOnly(id){
-      const order = ["enigme1","enigme2","enigme3","enigme4","fin"];
-      const targetIndex = order.indexOf(id);
-      document.querySelectorAll(".enigme").forEach(e => e.style.display="none");
-      for(let i=0;i<=targetIndex;i++){
-        const eid = order[i];
-        const el = document.getElementById(eid);
-        if (el) el.style.display = "block";
-      }
-    }
-
-    // Accès global (avant “Commencer”)
-    function setAccess(ok){
-      if (ok) {
-        localStorage.setItem(LS_KEY, "1");
-        btnCommencer.disabled = false;
-        badge.textContent = "déverrouillé";
-        badge.classList.remove("ko"); badge.classList.add("ok");
-      } else {
-        localStorage.removeItem(LS_KEY);
-        localStorage.removeItem(LS_KEY+"_unlocked");
-        btnCommencer.disabled = true;
-        btnScanner.disabled = true;
-        badge.textContent = "verrouillé";
-        badge.classList.remove("ok"); badge.classList.add("ko");
-        blocEnigmes.style.display = "none";
-      }
-    }
-
-    // Carte : rotation manuelle si besoin
-    let rot = 0;
-    rotateLeft.addEventListener("click", ()=>{
-      rot = (rot - 90) % 360;
-      mapImg.style.transform = `rotate(${rot}deg)`;
-    });
-  </script>
-</body>
-</html>
+      se
