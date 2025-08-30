@@ -58,7 +58,8 @@
 
     <!-- Preuve de paiement : SMS uniquement -->
     <div class="row">
-      <input type="text" id="payerName" placeholder="Nom / Prénom" />
+      <!-- Nom toujours fixé à INARI (non éditable) -->
+      <input type="text" id="payerName" value="INARI" readonly />
       <input type="text" id="payerTxn"  placeholder="N° de paiement PayPal" />
       <button class="btn" id="btnEnvoyerSMS">Envoyer la preuve par SMS</button>
     </div>
@@ -84,7 +85,6 @@
         <a class="btn" download href="carte-schoelcher.jpg">Télécharger</a>
       </div>
       <div class="map-frame">
-        <!-- ⚠️ Mets ton fichier image dans le dépôt sous ce nom, ou change le src -->
         <img class="map-img" id="mapImg" src="carte-schoelcher.jpg" alt="Carte du jeu de piste à Schœlcher">
       </div>
     </div>
@@ -93,8 +93,6 @@
   <!-- ÉNIGMES -->
   <section id="bloc-enigmes" class="card" style="display:none;">
     <h2>Énigmes</h2>
-    <p class="muted">Remplace les textes par tes énigmes. Seule la 1 est visible au départ.</p>
-
     <article id="enigme1" class="enigme">
       <h3>Énigme 1</h3>
       <p><em>(Ton ÉNIGME 1 ici)</em></p>
@@ -142,26 +140,25 @@
   </div>
 
   <footer>
-    <span class="muted">Personnalise tes énigmes et les valeurs des QR dans la CONFIG ci-dessous.</span>
+    <span class="muted">⚠️ Pense à mettre tes vraies énigmes et codes QR dans la CONFIG ci-dessous.</span>
   </footer>
 
   <script>
-    /* ======================= CONFIG À PERSONNALISER ======================= */
-    const CONTACT_PHONE = "+596696327693";          // ← TON numéro (format international)
-    const ACCESS_CODE   = "SCHOELCHER-10";          // ← Code que TU donnes après vérif du paiement
-    const LS_KEY        = "jp_schoelcher_unlocked_v2";
+    /* ======================= CONFIG ======================= */
+    const CONTACT_PHONE = "+596696327693";          // ← Ton numéro
+    const ACCESS_CODE   = "SCHOELCHER-10";          // ← Code que tu donnes après vérif
+    const LS_KEY        = "jp_schoelcher_unlocked_v3";
 
     // Suite attendue des QR (valeurs EXACTES encodées dans tes QR)
-    // Remplace ENIGME-2 / ENIGME-3 / ENIGME-4 / FIN par tes valeurs réelles.
     const QR_FLOW = [
       { nextId:"enigme2", value:"ENIGME-2" },
       { nextId:"enigme3", value:"ENIGME-3" },
       { nextId:"enigme4", value:"ENIGME-4" },
       { nextId:"fin",     value:"FIN" }
     ];
-    /* ===================== FIN CONFIG – NE RIEN CASSEZ ==================== */
+    /* ===================================================== */
 
-    // Références / État
+    // Références
     const badge = document.getElementById("badge");
     const btnCommencer = document.getElementById("btnCommencer");
     const btnScanner = document.getElementById("btnScanner");
@@ -169,6 +166,8 @@
     const codeInput = document.getElementById("codeInput");
     const btnValiderCode = document.getElementById("btnValiderCode");
     const btnEnvoyerSMS = document.getElementById("btnEnvoyerSMS");
+    const payerName = document.getElementById("payerName");
+    const payerTxn = document.getElementById("payerTxn");
     const scanModal = document.getElementById("scanModal");
     const video = document.getElementById("video");
     const qrManual = document.getElementById("qrManual");
@@ -184,9 +183,9 @@
     btnCommencer.addEventListener("click", () => {
       if (btnCommencer.disabled) return;
       blocEnigmes.style.display = "block";
-      showOnly("enigme1");                 // seule la 1 visible au départ
+      showOnly("enigme1");
       blocEnigmes.scrollIntoView({behavior:"smooth"});
-      btnScanner.disabled = false;         // on autorise le scan
+      btnScanner.disabled = false;
     });
 
     btnValiderCode.addEventListener("click", () => {
@@ -200,13 +199,13 @@
       }
     });
 
-    // Envoyer la preuve par SMS (ouvre l'app SMS avec un message prérempli qui commence par INARI)
+    // SMS preuve (Nom=INARI forcé)
     btnEnvoyerSMS.addEventListener("click", () => {
-      const name = (document.getElementById("payerName").value||"").trim();
-      const txn  = (document.getElementById("payerTxn").value||"").trim();
+      const name = payerName.value; // toujours "INARI"
+      const txn  = (payerTxn.value||"").trim();
       if(!txn) return alert("Entre ton N° de paiement PayPal.");
       const body = encodeURIComponent(
-        `INARI\nNom: ${name}\nPaiement: ${txn}`
+        `INARI\nPaiement: ${txn}`
       );
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const href = isIOS
@@ -215,7 +214,7 @@
       window.location.href = href;
     });
 
-    // Scanner (modal)
+    // Scanner
     let stream, detector;
     btnScanner.addEventListener("click", openScan);
     btnFermerScan.addEventListener("click", closeScan);
@@ -258,7 +257,6 @@
       if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
     }
 
-    // Gère un QR scanné (ou saisi manuellement)
     function handleQR(value){
       const unlocked = getUnlocked();
       const nextItem = QR_FLOW.find(item => !unlocked.includes(item.nextId));
@@ -272,11 +270,10 @@
         closeScan();
         alert("QR validé ✅");
       } else {
-        scanMsg.textContent = "QR incorrect pour cette étape ❌";
+        scanMsg.textContent = "QR incorrect ❌";
       }
     }
 
-    // Déverrouillage / persistance
     function getUnlocked(){
       try{ return JSON.parse(localStorage.getItem(LS_KEY+"_unlocked")||"[]"); }catch(_){ return []; }
     }
@@ -290,19 +287,16 @@
       showOnly(id);
     }
 
-    // Affiche uniquement jusqu’à l’énigme demandée
     function showOnly(id){
       const order = ["enigme1","enigme2","enigme3","enigme4","fin"];
       const targetIndex = order.indexOf(id);
       document.querySelectorAll(".enigme").forEach(e => e.style.display="none");
       for(let i=0;i<=targetIndex;i++){
-        const eid = order[i];
-        const el = document.getElementById(eid);
+        const el = document.getElementById(order[i]);
         if (el) el.style.display = "block";
       }
     }
 
-    // Accès global (avant “Commencer”)
     function setAccess(ok){
       if (ok) {
         localStorage.setItem(LS_KEY, "1");
@@ -320,7 +314,6 @@
       }
     }
 
-    // Carte : rotation manuelle si besoin
     let rot = 0;
     rotateLeft.addEventListener("click", ()=>{
       rot = (rot - 90) % 360;
