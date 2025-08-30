@@ -62,7 +62,6 @@
       <input type="text" id="payerTxn"  placeholder="N° de paiement PayPal" />
       <button class="btn" id="btnEnvoyerSMS">Envoyer la preuve par SMS</button>
     </div>
-    <p class="muted">Le SMS démarre par <strong>INARI</strong> pour que l’organisateur l’identifie.</p>
 
     <p class="muted" id="txtValidity"></p>
     <p class="muted"><strong id="txtStart"></strong></p>
@@ -142,15 +141,11 @@
     </div>
   </div>
 
-  <footer>
-    <span class="muted">Tu peux modifier les phrases clés (validité, démarrage, visibilité) dans la CONFIG ci-dessous.</span>
-  </footer>
-
   <script>
     /* ======================= CONFIG À PERSONNALISER ======================= */
     const CONTACT_PHONE = "+596696327693";          // ← Ton numéro pour le SMS
     const ACCESS_CODE   = "SCHOELCHER-10";          // ← Code d’accès (modifiable quand tu veux)
-    const LS_KEY        = "jp_schoelcher_unlocked_v4";
+    const LS_KEY        = "jp_schoelcher_unlocked_v5";
 
     // Textes configurables
     const TEXT_VALIDITY   = "Le jeu peut démarrer après réception du code. Ce code est valable 1 semaine.";
@@ -196,9 +191,9 @@
     btnCommencer.addEventListener("click", () => {
       if (btnCommencer.disabled) return;
       blocEnigmes.style.display = "block";
-      showOnly("enigme1");                 // seule la 1 visible au départ
+      showOnly("enigme1");
       blocEnigmes.scrollIntoView({behavior:"smooth"});
-      btnScanner.disabled = false;         // on autorise le scan
+      btnScanner.disabled = false;
     });
 
     btnValiderCode.addEventListener("click", () => {
