@@ -28,15 +28,14 @@
   .map-img{max-height:100%;max-width:100%;display:block;transition:transform .2s ease}
   .map-tools{position:absolute;right:12px;top:12px;display:flex;gap:6px}
 
+  /* Énigmes / Scanner */
   .enigme{display:none}
   .enigme.active{display:block}
   .hr{height:1px;background:#ececf2;margin:16px 0}
-  footer{margin-top:28px;color:#555;font-size:.9rem}
-
-  /* Scanner */
   #scanModal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:16px}
   #scanBox{background:#fff;border-radius:12px;max-width:520px;width:100%;padding:16px}
   video{width:100%;border-radius:10px;border:1px solid #e6e6ea}
+  footer{margin-top:28px;color:#555;font-size:.9rem}
 </style>
 </head>
 <body>
@@ -71,7 +70,7 @@
       <button class="btn primary" id="btnCommencer" disabled>Commencer le jeu</button>
       <button class="btn" id="btnScanner" disabled>Scanner le QR code</button>
     </div>
-    <p class="muted">Le scanner se débloque après l’accès. Chaque énigme suivante n’apparaît qu’après le scan du bon QR.</p>
+    <p class="muted">Seule l’Énigme 1 est visible au départ. Chaque énigme suivante s’affiche après le scan du bon QR.</p>
   </section>
 
   <!-- TA CARTE -->
@@ -84,6 +83,7 @@
         <a class="btn" download href="carte-schoelcher.jpg">Télécharger</a>
       </div>
       <div class="map-frame">
+        <!-- ⚠️ Mets ton fichier image dans le dépôt sous ce nom, ou change le src -->
         <img class="map-img" id="mapImg" src="carte-schoelcher.jpg" alt="Carte du jeu de piste à Schœlcher">
       </div>
     </div>
@@ -92,30 +92,29 @@
   <!-- ÉNIGMES -->
   <section id="bloc-enigmes" class="card" style="display:none;">
     <h2>Énigmes</h2>
-    <p class="muted">Seule l’Énigme 1 est visible au départ. Les suivantes se débloquent en scannant le bon QR.</p>
+    <p class="muted">Remplace les textes par tes énigmes. Seule la 1 est visible au départ.</p>
 
-    <!-- 1 visible après déverrouillage accès -->
     <article id="enigme1" class="enigme">
       <h3>Énigme 1</h3>
-      <p><em>(👉 Remplace ce texte par TON ÉNIGME 1)</em></p>
+      <p><em>(Ton ÉNIGME 1 ici)</em></p>
       <p class="muted">Scanne le QR “ENIGME-2” pour afficher la suivante.</p>
     </article>
 
     <article id="enigme2" class="enigme">
       <h3>Énigme 2</h3>
-      <p><em>(👉 TON ÉNIGME 2)</em></p>
+      <p><em>(Ton ÉNIGME 2 ici)</em></p>
       <p class="muted">Scanne le QR “ENIGME-3”.</p>
     </article>
 
     <article id="enigme3" class="enigme">
       <h3>Énigme 3</h3>
-      <p><em>(👉 TON ÉNIGME 3)</em></p>
+      <p><em>(Ton ÉNIGME 3 ici)</em></p>
       <p class="muted">Scanne le QR “ENIGME-4”.</p>
     </article>
 
     <article id="enigme4" class="enigme">
       <h3>Énigme 4</h3>
-      <p><em>(👉 TON ÉNIGME 4)</em></p>
+      <p><em>(Ton ÉNIGME 4 ici)</em></p>
       <p class="muted">Scanne le QR “FIN”.</p>
     </article>
 
@@ -142,26 +141,26 @@
   </div>
 
   <footer>
-    <span class="muted">Besoin que je remplace les textes par tes énigmes exactes ? Dis-les moi et je te renvoie ce fichier rempli.</span>
+    <span class="muted">Pour intégration complète, remplace les textes d’énigmes et les valeurs des QR dans la CONFIG.</span>
   </footer>
 
   <script>
-    // =============== CONFIG À PERSONNALISER ===============
-    const CONTACT_EMAIL = "ton.email@example.com";   // ← TON email pour recevoir la preuve
+    /* ======================= CONFIG À PERSONNALISER ======================= */
+    const CONTACT_EMAIL = "ton.email@example.com";   // ← TON email (réception des preuves)
     const ACCESS_CODE   = "SCHOELCHER-10";           // ← Code que TU donnes après vérif du paiement
     const LS_KEY        = "jp_schoelcher_unlocked_v2";
 
-    // Suite attendue des QR (valeurs EXACTES à encoder dans tes QR)
-    // Remplace "ENIGME-2", etc. par tes vraies valeurs.
+    // Suite attendue des QR (valeurs EXACTES encodées dans tes QR)
+    // Remplace ENIGME-2 / ENIGME-3 / ENIGME-4 / FIN par tes valeurs réelles.
     const QR_FLOW = [
       { nextId:"enigme2", value:"ENIGME-2" },
       { nextId:"enigme3", value:"ENIGME-3" },
       { nextId:"enigme4", value:"ENIGME-4" },
       { nextId:"fin",     value:"FIN" }
     ];
-    // =============== FIN CONFIG ===============
+    /* ===================== FIN CONFIG – NE RIEN CASSEZ ==================== */
 
-    // ÉTAT / RÉF
+    // Références / État
     const badge = document.getElementById("badge");
     const btnCommencer = document.getElementById("btnCommencer");
     const btnScanner = document.getElementById("btnScanner");
@@ -178,19 +177,17 @@
     const mapImg = document.getElementById("mapImg");
     const rotateLeft = document.getElementById("rotateLeft");
 
-    // INIT ACCÈS
+    // Accès global
     setAccess(localStorage.getItem(LS_KEY) === "1");
 
-    // Commencer montre seulement énigme 1 au départ
     btnCommencer.addEventListener("click", () => {
       if (btnCommencer.disabled) return;
       blocEnigmes.style.display = "block";
-      showOnly("enigme1");
+      showOnly("enigme1");                 // seule la 1 visible au départ
       blocEnigmes.scrollIntoView({behavior:"smooth"});
-      btnScanner.disabled = false;
+      btnScanner.disabled = false;         // on autorise le scan
     });
 
-    // Valider code accès
     btnValiderCode.addEventListener("click", () => {
       const v = (codeInput.value || "").trim();
       if (!v) return alert("Entre le code d’accès.");
@@ -202,7 +199,6 @@
       }
     });
 
-    // Envoyer preuve paiement (mailto)
     btnEnvoyerPreuve.addEventListener("click", () => {
       const name = (document.getElementById("payerName").value||"").trim();
       const email= (document.getElementById("payerEmail").value||"").trim();
@@ -215,7 +211,7 @@
       window.location.href = `mailto:${encodeURIComponent(CONTACT_EMAIL)}?subject=${subject}&body=${body}`;
     });
 
-    // Scanner modal
+    // Scanner (modal)
     let stream, detector;
     btnScanner.addEventListener("click", openScan);
     btnFermerScan.addEventListener("click", closeScan);
@@ -258,9 +254,8 @@
       if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
     }
 
-    // Traite un QR scanné
+    // Gère un QR scanné (ou saisi manuellement)
     function handleQR(value){
-      // Cherche la prochaine étape non débloquée
       const unlocked = getUnlocked();
       const nextItem = QR_FLOW.find(item => !unlocked.includes(item.nextId));
       if (!nextItem){
@@ -277,7 +272,7 @@
       }
     }
 
-    // Déverrouillage / stockage
+    // Déverrouillage / persistance
     function getUnlocked(){
       try{ return JSON.parse(localStorage.getItem(LS_KEY+"_unlocked")||"[]"); }catch(_){ return []; }
     }
@@ -291,11 +286,9 @@
       showOnly(id);
     }
 
-    // Affiche uniquement l’énigme demandée + toutes les précédentes débloquées
+    // Affiche uniquement jusqu’à l’énigme demandée
     function showOnly(id){
       const order = ["enigme1","enigme2","enigme3","enigme4","fin"];
-      const unlocked = new Set(getUnlocked());
-      unlocked.add("enigme1"); // la 1 est autorisée dès le début du jeu
       const targetIndex = order.indexOf(id);
       document.querySelectorAll(".enigme").forEach(e => e.style.display="none");
       for(let i=0;i<=targetIndex;i++){
@@ -305,7 +298,7 @@
       }
     }
 
-    // Verrouillage global
+    // Accès global (avant “Commencer”)
     function setAccess(ok){
       if (ok) {
         localStorage.setItem(LS_KEY, "1");
@@ -323,7 +316,7 @@
       }
     }
 
-    // Carte : rotation si nécessaire
+    // Carte : rotation manuelle si besoin
     let rot = 0;
     rotateLeft.addEventListener("click", ()=>{
       rot = (rot - 90) % 360;
