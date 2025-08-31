@@ -122,29 +122,23 @@
     <h2>Énigmes</h2>
     <p id="txtVisibility">Seule l’Énigme 1 est visible au départ. Pour débloquer les suivantes, scanne les bons QR codes dans l’ordre.</p>
 
-    <!-- ÉNIGME 1 : ton PDF intégré en parchemin -->
+    <!-- ÉNIGME 1 : DOCX intégré -->
     <article id="enigme1" class="enigme">
-  <div class="parchment">
-    <h3>🗺️ Énigme 1</h3>
-
-    <!-- Viewer Office pour affichage du .docx -->
-    <div id="enigme1Doc" style="aspect-ratio: 16/9; width:100%; max-height: 520px;">
-      <iframe id="docxFrame" title="Énigme 1"
-              style="width:100%; height:100%; border:0; border-radius:10px;"
-              loading="lazy" referrerpolicy="no-referrer"></iframe>
-    </div>
-
-    <!-- Lien secours si l’iframe est bloquée -->
-    <p style="margin-top:.5rem;">
-      Si le document ne s’affiche pas, <a id="docxDirectLink" href="enigme1.docx" target="_blank" rel="noopener">ouvre l’Énigme 1 (DOCX)</a>.
-    </p>
-  </div>
-
-  <div class="row scan-row">
-    <button class="btn" data-expects="ENIGME-2" onclick="scanNext(this)">Scanner le QR pour l’Énigme 2</button>
-  </div>
-</article>
-
+      <div class="parchment">
+        <h3>🗺️ Énigme 1</h3>
+        <div id="enigme1Doc" style="aspect-ratio: 16/9; width:100%; max-height: 520px;">
+          <iframe id="docxFrame" title="Énigme 1"
+                  style="width:100%; height:100%; border:0; border-radius:10px;"
+                  loading="lazy" referrerpolicy="no-referrer"></iframe>
+        </div>
+        <p style="margin-top:.5rem;">
+          Si le document ne s’affiche pas, <a id="docxDirectLink" href="enigme1.docx" target="_blank" rel="noopener">ouvre l’Énigme 1 (DOCX)</a>.
+        </p>
+      </div>
+      <div class="row scan-row">
+        <button class="btn" data-expects="ENIGME-2" onclick="scanNext(this)">Scanner le QR pour l’Énigme 2</button>
+      </div>
+    </article>
 
     <article id="enigme2" class="enigme">
       <div class="parchment">
@@ -196,27 +190,6 @@
       <p id="scanMsg" class="muted" style="margin:6px 0 0;color:#7a3e21"></p>
     </div>
   </div>
-// ==== Affichage du DOCX de l’Énigme 1 via Office Viewer ====
-(function mountDocxViewer(){
-  try{
-    // Ton fichier placé à la racine du site : /enigme1.docx
-    const DOCX_PATH = "enigme1.docx";
-    const absoluteDocUrl = new URL(DOCX_PATH, location.href).href;
-
-    // Office viewer (mode embed). wdAr=1.7777 ~ format paysage 16:9
-    const officeEmbed = "https://view.officeapps.live.com/op/embed.aspx?src="
-                        + encodeURIComponent(absoluteDocUrl)
-                        + "&wdAr=1.7777";
-
-    const ifr = document.getElementById("docxFrame");
-    if (ifr) ifr.src = officeEmbed;
-
-    const a = document.getElementById("docxDirectLink");
-    if (a) a.href = absoluteDocUrl;
-  }catch(e){
-    // En cas d’échec, on laisse le lien direct <a> faire le job
-  }
-})();
 
   <!-- Classement -->
   <section class="card" id="classement">
@@ -233,11 +206,11 @@
   const ACCESS_CODES = ["SCHOELCHER-10"];
 
   /* ====== STORAGE KEYS ====== */
-  const KEY_ACCESS="jp_access";          // "1" si accès valide
+  const KEY_ACCESS="jp_access";
   const KEY_PSEUDO="jp_player";
-  const KEY_STARTED="jp_started";        // "1" si bouton Commencer cliqué
-  const KEY_UNLOCKED="jp_unlocked";      // JSON: ["enigme1","enigme2",...]
-  const KEY_START_TIME="jp_start_time";  // timestamp ms pour chrono
+  const KEY_STARTED="jp_started";
+  const KEY_UNLOCKED="jp_unlocked";
+  const KEY_START_TIME="jp_start_time";
 
   /* ====== DOM ====== */
   const $=s=>document.querySelector(s);
@@ -279,8 +252,7 @@
   function unlock(id){
     const arr=getUnlocked();
     if(!arr.includes(id)) arr.push(id);
-    setUnlocked(arr);
-    renderProgress();
+    setUnlocked(arr); renderProgress();
   }
   function renderProgress(){
     const arr=getUnlocked();
@@ -315,26 +287,37 @@
     if(btnCommencer.disabled) return;
     localStorage.setItem(KEY_STARTED,"1");
     const arr=getUnlocked(); if(!arr.includes("enigme1")) arr.push("enigme1"); setUnlocked(arr);
-    renderProgress();
-    startChrono();
+    renderProgress(); startChrono();
   });
 
-  /* ====== EXTRACTION CODE À PARTIR DE N’IMPORTE QUOI (URL/TEXTE) ====== */
+  /* ====== DOCX viewer pour Énigme 1 ====== */
+  (function mountDocxViewer(){
+    try{
+      const DOCX_PATH = "enigme1.docx"; // à la racine
+      const absoluteDocUrl = new URL(DOCX_PATH, location.href).href;
+      const officeEmbed = "https://view.officeapps.live.com/op/embed.aspx?src="
+                          + encodeURIComponent(absoluteDocUrl)
+                          + "&wdAr=1.7777";
+      const ifr = document.getElementById("docxFrame");
+      if (ifr) ifr.src = officeEmbed;
+      const a = document.getElementById("docxDirectLink");
+      if (a) a.href = absoluteDocUrl;
+    }catch(e){}
+  })();
+
+  /* ====== EXTRACTION CODE QR (URL ou texte) ====== */
   function extractQR(raw){
     const s = String(raw||"").trim();
-    // URL avec ?qr=CODE
     try{
       const u = new URL(s);
       const q = u.searchParams.get("qr");
       if(q) return q.toUpperCase();
-    }catch(e){ /* pas une URL */ }
-    // Cherche ENIGME-2/3/4 ou FIN dans n'importe quel texte
+    }catch(e){}
     const m = s.toUpperCase().match(/\b(ENIGME-[234]|FIN)\b/);
-    if(m) return m[1];
-    return null;
+    return m ? m[1] : null;
   }
 
-  /* ====== SCANNER PAR ÉNIGME ====== */
+  /* ====== SCAN PAR ÉNIGME ====== */
   let stream=null, detector=null, rafId=null, expectedNow=null;
   window.scanNext = (btn)=>{
     if(!hasAccess()){ alert("Accès requis. Merci de valider votre paiement."); return; }
@@ -401,7 +384,7 @@
   (function gateFromURL(){
     const params=new URLSearchParams(location.search);
     const q=params.get("qr");
-    if(q) history.replaceState({}, "", location.pathname); // nettoie l'URL
+    if(q) history.replaceState({}, "", location.pathname);
     if(!q) return;
 
     if(!hasAccess()){
