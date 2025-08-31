@@ -6,14 +6,14 @@
 <title>Jeu de Piste – Schœlcher</title>
 <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap" rel="stylesheet">
 <style>
-  :root{ --ink:#f5f0e6; --marron:#5a2e0c; --marron-light:#7a3e21; --marron-dark:#2d1405; --parch:#fffdf4; --frame:#a97442; --shadow:rgba(0,0,0,.4); }
+  :root{ --ink:#f5f0e6; --marron:#5a2e0c; --marron-light:#7a3e21; --marron-dark:#2d1405; --parch:#fff9e9; --frame:#a97442; --shadow:rgba(0,0,0,.4); }
   *{box-sizing:border-box}
   body{font-family:'Trebuchet MS',Arial,sans-serif;background:var(--marron);margin:0;padding:24px;line-height:1.6;color:var(--ink)}
   .hero{background:var(--marron-light);border:3px solid var(--frame);border-radius:12px;padding:18px;margin-bottom:18px;box-shadow:4px 4px 8px var(--shadow)}
   .hero h1{font-family:'Alfa Slab One',serif;color:#f5e1c4;text-shadow:2px 2px 0 var(--marron-dark);margin:0 0 .5rem}
   .hero p{margin:.25rem 0 0;color:#f0e6d2}
 
-  .card{background:var(--parch);border:2px solid var(--frame);border-radius:12px;padding:18px;margin-top:16px;color:#2d1a0a;box-shadow:3px 3px 6px var(--shadow)}
+  .card{background:#fffdf4;border:2px solid var(--frame);border-radius:12px;padding:18px;margin-top:16px;color:#2d1a0a;box-shadow:3px 3px 6px var(--shadow)}
   h2{font-family:'Alfa Slab One',serif;color:var(--marron-dark)}
   .row{display:flex;gap:.6rem;flex-wrap:wrap;margin:.4rem 0 1rem;align-items:center}
   .btn{display:inline-block;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:700;border:2px solid var(--frame);background:#d4a373;color:#2d1a0a;cursor:pointer;box-shadow:2px 2px 4px var(--shadow);transition:transform .18s,background .18s,color .18s}
@@ -37,7 +37,7 @@
   .hr{height:2px;margin:16px 0;background:#7a3e21}
   .enigme{display:none}
 
-  /* Scan modal */
+  /* Modal scan */
   #scanModal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
   #scanBox{background:#fffef6;border-radius:12px;max-width:520px;width:100%;padding:16px;border:2px solid #a97442;box-shadow:4px 4px 10px var(--shadow)}
   video{width:100%;border-radius:10px;border:2px solid #a97442;background:#000}
@@ -49,6 +49,27 @@
   th,td{padding:8px;border-bottom:1px solid #e4d6bd;text-align:left}
   th{background:#f7ead0}
   .sms-hint{background:#fff4d6;border:2px dashed #c28b2c;border-radius:10px;padding:10px;margin-top:6px;color:#2d1a0a}
+
+  /* Effet parchemin */
+  .parchment{
+    position:relative;
+    background: radial-gradient(ellipse at 30% 20%, #fff6d9 0%, #fff0c9 40%, #f6e4b6 70%, #ecd9a6 100%);
+    border:1px solid #c9a96b;
+    color:#3a240d;
+    padding:18px 16px 16px 16px;
+    border-radius:10px;
+    box-shadow: 0 3px 12px rgba(0,0,0,.25), inset 0 0 40px rgba(125,72,23,.15);
+  }
+  .parchment:before, .parchment:after{
+    content:""; position:absolute; left:10px; right:10px; height:10px;
+    background:radial-gradient(circle at 50% 0, rgba(0,0,0,.18), rgba(0,0,0,0) 60%);
+    filter:blur(4px);
+  }
+  .parchment:before{ top:-6px; transform:scaleY(-1); opacity:.35 }
+  .parchment:after { bottom:-6px; opacity:.35 }
+  .parchment h3{ margin-top:0; font-family:'Alfa Slab One',serif; letter-spacing:.5px }
+  .parchment .lead{ font-weight:700; font-style:italic; margin:.3rem 0 .6rem }
+  .parchment .icon{ font-size:1.2rem; margin-right:.35rem }
 
   /* Mise en évidence du bouton Commencer si besoin */
   @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
@@ -80,7 +101,7 @@
     </div>
     <div id="smsHint" class="sms-hint" style="display:none;"></div>
 
-    <!-- Pseudo + Code + Valider (bouton après les deux champs) -->
+    <!-- Pseudo + Code + Valider -->
     <div class="row">
       <div class="row" style="gap:.4rem">
         <input type="text" id="playerName" placeholder="Ton pseudo (obligatoire)" />
@@ -125,7 +146,14 @@
     <h2>Énigmes</h2>
     <p id="txtVisibility">Seule l’Énigme 1 est visible au départ. Pour débloquer les suivantes, scanne les bons QR codes dans l’ordre.</p>
 
-    <article id="enigme1" class="enigme"><h3>Énigme 1</h3><p><em>(Ton ÉNIGME 1 ici)</em></p></article>
+    <article id="enigme1" class="enigme">
+      <div class="parchment">
+        <h3>🗺️ Énigme 1</h3>
+        <p class="lead"><span class="icon">⚡️</span>La symétrie t'emportera au premier endroit.</p>
+        <p>Là où l’électricité est source d’énergie, tu trouveras l’essence de ta quête.</p>
+      </div>
+    </article>
+
     <article id="enigme2" class="enigme"><h3>Énigme 2</h3><p><em>(Ton ÉNIGME 2 ici)</em></p></article>
     <article id="enigme3" class="enigme"><h3>Énigme 3</h3><p><em>(Ton ÉNIGME 3 ici)</em></p></article>
     <article id="enigme4" class="enigme"><h3>Énigme 4</h3><p><em>(Ton ÉNIGME 4 ici)</em></p></article>
@@ -177,14 +205,13 @@
   const playerNameInput=$("#playerName"), chronoEl=$("#chrono");
   const payerTxn=$("#payerTxn"), btnEnvoyerSMS=$("#btnEnvoyerSMS"), smsHint=$("#smsHint");
   const badgePseudo=$("#badgePseudo"), badgeCode=$("#badgeCode");
-  const hintStart=$("#hintStart");
 
-  // Normaliser le code : NFD pour accents, on retire espaces/underscores/slashs \ /, et TOUS les principaux tirets
+  // Normaliser le code : accents (NFD), supprimer espaces/_, slashs, et tous les tirets courants
   function normalize(s){
     return (s||"")
       .normalize('NFD').replace(/[\u0300-\u036f]/g,'')    // diacritiques
       .replace(/[\s_\/\\]+/g,'')                         // espaces, _, /, \
-      .replace(/[-–—﹘﹣－]+/g,'')                        // différents tirets
+      .replace(/[-–—﹘﹣－]+/g,'')                        // tirets
       .toUpperCase();
   }
   const ACCESS_SET = new Set(ACCESS_CODES.map(normalize));
@@ -276,7 +303,7 @@
     codeInput.readOnly = true;
     btnValiderCode.disabled = true;
 
-    // 👉 Affiche immédiatement l’Énigme 1 (sans appuyer sur Commencer)
+    // 👉 Affiche immédiatement l’Énigme 1
     document.getElementById("bloc-enigmes").style.display="block";
     showOnly("enigme1");
     btnScanner.disabled = false;
@@ -284,7 +311,7 @@
     alert("✅ Pseudo et code validés. L’Énigme 1 est affichée.");
   });
 
-  // Commencer (garde la possibilité d’appuyer si tu préfères, mais ici Énigme 1 est déjà visible)
+  // Commencer (optionnel)
   btnCommencer.addEventListener("click", ()=>{
     if(btnCommencer.disabled) return;
     document.getElementById("bloc-enigmes").style.display="block";
