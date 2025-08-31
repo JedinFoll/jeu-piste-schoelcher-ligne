@@ -120,14 +120,20 @@
   <!-- Énigmes -->
   <section id="bloc-enigmes" class="card" style="display:none;">
     <h2>Énigmes</h2>
-    <p id="txtVisibility">Seule l’Énigme 1 est visible au départ. Pour débloquer les suivantes, scanne les bons QR codes dans l’ordre.</p>
+    <p id="txtVisibility">Seule l’Énigme 1 est visible au départ. Pour débloquer l’Énigme 2, scanne le bon QR code.</p>
 
-    <!-- ÉNIGME 1 : PDF intégré -->
+    <!-- ÉNIGME 1 : PDF (solution B) -->
     <article id="enigme1" class="enigme">
       <div class="parchment">
         <h3>🗺️ Énigme 1</h3>
-        <object data="assets/enigmes/enigme1.pdf#view=FitH" type="application/pdf" width="100%" height="520">
-          <p>Impossible d’afficher le PDF. <a href="assets/enigmes/enigme1.pdf" target="_blank" rel="noopener">Ouvrir l’Énigme 1</a></p>
+        <object
+          data="assets/enigmes/enigme1.pdf#view=FitH"
+          type="application/pdf"
+          width="100%" height="520"
+          style="border:0;border-radius:10px">
+          <p>Impossible d’afficher le PDF.
+            <a href="assets/enigmes/enigme1.pdf" target="_blank" rel="noopener">Ouvrir l’Énigme 1 (PDF)</a>.
+          </p>
         </object>
       </div>
       <div class="row scan-row">
@@ -135,43 +141,17 @@
       </div>
     </article>
 
+    <!-- ÉNIGME 2 -->
     <article id="enigme2" class="enigme">
       <div class="parchment">
         <h3>🌿 Énigme 2</h3>
-        <p class="lead">Passage Ombragé<br>Nature Taguée</p>
+        <p class="lead">Passage Ombragé – Nature Taguée</p>
         <p>Représentent ta prochaine destination.</p>
       </div>
-      <div class="row scan-row">
-        <button class="btn" data-expects="ENIGME-3" onclick="scanNext(this)">Scanner le QR pour l’Énigme 3</button>
-      </div>
+      <!-- (pas de bouton suivant tant que tu ne définis pas l’Énigme 3) -->
     </article>
 
-    <article id="enigme3" class="enigme">
-      <div class="parchment">
-        <h3>Énigme 3</h3>
-        <p><em>(Ton ÉNIGME 3 ici)</em></p>
-      </div>
-      <div class="row scan-row">
-        <button class="btn" data-expects="ENIGME-4" onclick="scanNext(this)">Scanner le QR pour l’Énigme 4</button>
-      </div>
-    </article>
-
-    <article id="enigme4" class="enigme">
-      <div class="parchment">
-        <h3>Énigme 4</h3>
-        <p><em>(Ton ÉNIGME 4 ici)</em></p>
-      </div>
-      <div class="row scan-row">
-        <button class="btn" data-expects="FIN" onclick="scanNext(this)">Scanner le QR final</button>
-      </div>
-    </article>
-
-    <article id="fin" class="enigme">
-      <div class="parchment">
-        <h3>Bravo 🎉</h3>
-        <p>Tu as terminé le parcours !</p>
-      </div>
-    </article>
+    <!-- Fin s’affichera plus tard quand tu ajouteras les autres étapes -->
   </section>
 
   <!-- Scanner (vidéo) -->
@@ -196,22 +176,19 @@
   </section>
 
 <script>
-  /* =================== CONFIG =================== */
+  /* ============== CONFIG ============== */
   const CONTACT_PHONE = "+596696327693";
   const ACCESS_CODES  = ["SCHOELCHER-10"];
+  const ALLOW_FALLBACK = true; // accepte un QR quelconque pour l’étape courante si rien reconnu
 
-  // Compat : si un QR ne contient PAS ENIGME-2/3/4/FIN, mais qu’on scanne depuis le bouton d’une étape,
-  // on accepte ce QR pour cette étape. Mets false pour désactiver cette tolérance.
-  const ALLOW_FALLBACK = true;
-
-  /* ====== STORAGE KEYS ====== */
+  /* ============ STORAGE KEYS =========== */
   const KEY_ACCESS="jp_access";
   const KEY_PSEUDO="jp_player";
   const KEY_STARTED="jp_started";
   const KEY_UNLOCKED="jp_unlocked";
   const KEY_START_TIME="jp_start_time";
 
-  /* ====== DOM ====== */
+  /* =============== DOM ================= */
   const $=s=>document.querySelector(s);
   const badge=$("#badge"), btnCommencer=$("#btnCommencer");
   const blocEnigmes=$("#bloc-enigmes"), codeInput=$("#codeInput"), btnValiderCode=$("#btnValiderCode");
@@ -219,7 +196,7 @@
   const payerTxn=$("#payerTxn"), btnEnvoyerSMS=$("#btnEnvoyerSMS"), smsHint=$("#smsHint");
   const scanModal=$("#scanModal"), video=$("#video"), btnFermerScan=$("#btnFermerScan"), scanMsg=$("#scanMsg");
 
-  /* ====== UTIL ====== */
+  /* ============== UTIL ================ */
   function normalize(s){
     return (s||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'')
       .replace(/[\s_\/\\]+/g,'').replace(/[-–—﹘﹣－]+/g,'').toUpperCase();
@@ -232,7 +209,7 @@
     updateStartButton();
   }
 
-  /* ====== CHRONO ====== */
+  /* ============== CHRONO ============== */
   let startTime=null, timerInterval=null;
   const pad=n=>String(n).padStart(2,"0");
   const fmt=s=>`${pad(Math.floor(s/3600))}:${pad(Math.floor((s%3600)/60))}:${pad(Math.floor(s%60))}`;
@@ -244,8 +221,8 @@
     timerInterval=setInterval(tick,1000); tick();
   }
 
-  /* ====== PROGRESSION ====== */
-  const allOrder=["enigme1","enigme2","enigme3","enigme4","fin"];
+  /* ============ PROGRESSION ============ */
+  const order=["enigme1","enigme2"]; // pour l’instant
   function getUnlocked(){ try{ return JSON.parse(localStorage.getItem(KEY_UNLOCKED)||"[]"); }catch(_){ return []; } }
   function setUnlocked(arr){ localStorage.setItem(KEY_UNLOCKED, JSON.stringify(arr)); }
   function unlock(id){
@@ -260,7 +237,7 @@
     arr.forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display="block"; });
   }
 
-  /* ====== VALIDATION ACCÈS ====== */
+  /* ========= VALIDATION ACCÈS ========= */
   function updateStartButton(){
     const hasPseudo = !!(playerNameInput.value||"").trim();
     btnCommencer.disabled = !hasPseudo || !hasAccess();
@@ -281,7 +258,7 @@
     alert("✅ Accès validé. Appuie sur « Commencer le jeu ».");
   });
 
-  /* ====== DÉMARRAGE ====== */
+  /* ============== DÉMARRAGE ============== */
   btnCommencer.addEventListener("click", ()=>{
     if(btnCommencer.disabled) return;
     localStorage.setItem(KEY_STARTED,"1");
@@ -289,25 +266,19 @@
     renderProgress(); startChrono();
   });
 
-  /* ====== EXTRACTION CODE QR (URL ou texte) ====== */
+  /* ===== EXTRACTION CODE (URL/texte) ===== */
   function extractQR(raw){
     const s = String(raw||"").trim();
-    // URL avec ?qr=
-    try{
-      const u = new URL(s);
-      const q = u.searchParams.get("qr");
+    try{ // URL avec ?qr=
+      const u = new URL(s); const q = u.searchParams.get("qr");
       if(q) return q.toUpperCase();
     }catch(e){}
-    // Mots-clés
     const up = s.toUpperCase();
-    if (/\bENIGME-2\b/.test(up)) return "ENIGME-2";
-    if (/\bENIGME-3\b/.test(up)) return "ENIGME-3";
-    if (/\bENIGME-4\b/.test(up)) return "ENIGME-4";
-    if (/\bFIN\b/.test(up))      return "FIN";
+    if(/\bENIGME-2\b/.test(up)) return "ENIGME-2";
     return null;
   }
 
-  /* ====== SCAN PAR ÉNIGME ====== */
+  /* =========== SCAN PAR ÉNIGME =========== */
   let stream=null, detector=null, rafId=null, expectedNow=null;
   window.scanNext = (btn)=>{
     if(!hasAccess()){ alert("Accès requis. Merci de valider votre paiement."); return; }
@@ -322,7 +293,8 @@
     try{
       if('BarcodeDetector' in window){ detector=new BarcodeDetector({formats:['qr_code']}); }
       else{
-        scanMsg.textContent="Scanner intégré indisponible. Utilise l’appareil photo : le QR doit ouvrir cette page avec ?qr="+(expectedNow||"ENIGME-2")+" (paywall actif).";
+        scanMsg.innerHTML = "Scanner intégré indisponible.<br>"
+          +"Utilise l’appareil photo : le QR doit ouvrir cette page avec <code>?qr=ENIGME-2</code>.";
         return;
       }
       stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
@@ -336,10 +308,7 @@
       if(codes && codes.length){
         const raw=(codes[0].rawValue||"").trim();
         let code = extractQR(raw);
-        // Compatibilité : si rien reconnu mais on sait ce qui est attendu, on accepte ce QR pour débloquer l’étape
-        if(!code && ALLOW_FALLBACK && expectedNow && raw){
-          code = expectedNow;
-        }
+        if(!code && ALLOW_FALLBACK && expectedNow && raw){ code = expectedNow; }
         if(code){ progressFromQR(code); closeScan(); return; }
         else { scanMsg.textContent = "QR non reconnu."; }
       }
@@ -353,28 +322,19 @@
   }
 
   function progressFromQR(code){
-    if(!hasAccess()){
-      alert("Accès requis. Merci d’acheter et valider avant d’utiliser les QR codes.");
-      return;
-    }
-    const orderMap={ "ENIGME-2":"enigme2", "ENIGME-3":"enigme3", "ENIGME-4":"enigme4", "FIN":"fin" };
-    const targetId = orderMap[code];
-    if(!targetId){ alert("QR inconnu ❌"); return; }
+    if(!hasAccess()){ alert("Accès requis. Merci d’acheter et valider avant d’utiliser les QR codes."); return; }
+    if(code!=="ENIGME-2"){ alert("QR inconnu ❌"); return; }
 
+    // étape attendue : débloquer l’énigme 2
     const arr=getUnlocked();
-    const sequence=["enigme1","enigme2","enigme3","enigme4","fin"];
-    const nextId=sequence.find(id=>!arr.includes(id) && id!=="enigme1") || "fin";
+    if(!arr.includes("enigme1")){ alert("Commence par l’Énigme 1."); return; }
+    if(arr.includes("enigme2")){ alert("Énigme 2 déjà débloquée ✅"); renderProgress(); return; }
 
-    if(targetId!==nextId){
-      if(arr.includes(targetId)){ unlock(targetId); renderProgress(); alert("Étape déjà débloquée ✅"); }
-      else { alert("Ce QR n’est pas attendu maintenant."); }
-      return;
-    }
-    unlock(targetId);
-    alert("QR validé ✅");
+    unlock("enigme2");
+    alert("Énigme 2 débloquée ✅");
   }
 
-  /* ====== PAYWALL & PROGRESSION VIA URL ?qr=... ====== */
+  /* ====== PAYWALL & URL ?qr= ====== */
   (function gateFromURL(){
     const params=new URLSearchParams(location.search);
     const q=params.get("qr");
@@ -394,7 +354,7 @@
     else { alert("QR non reconnu via l’URL."); }
   })();
 
-  /* ====== RESTAURATION AU CHARGEMENT ====== */
+  /* ======= RESTAURATION AU CHARGEMENT ======= */
   (function restore(){
     setAccessUI(hasAccess());
     const p = localStorage.getItem(KEY_PSEUDO)||""; if(p){ playerNameInput.value=p; playerNameInput.readOnly=hasAccess(); }
@@ -409,7 +369,7 @@
     }
   })();
 
-  /* ===== SMS (INARI) ===== */
+  /* ======= SMS (INARI) ======= */
   const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
   const isAndroid=/Android/i.test(navigator.userAgent);
   function buildSmsMessage(){
