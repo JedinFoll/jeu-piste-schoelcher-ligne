@@ -32,7 +32,6 @@
   .map-wrap{position:relative;width:100%;overflow:auto;background:#faf3e0;border:2px solid #a97442;border-radius:12px}
   .map-frame{width:100%;height:min(80vh,700px);display:flex;align-items:center;justify-content:center}
   .map-img{max-height:100%;max-width:100%;display:block;border-radius:8px}
-  .map-tools{position:absolute;right:12px;top:12px;display:flex;gap:6px}
 
   .hr{height:2px;margin:16px 0;background:#7a3e21}
   .enigme{display:none}
@@ -45,36 +44,16 @@
   .hud{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
   .chip{background:#fff0cc;border:2px solid #e2b24c;border-radius:999px;padding:6px 12px;font-weight:700}
 
-  table{width:100%;border-collapse:collapse;margin-top:.5rem}
-  th,td{padding:8px;border-bottom:1px solid #e4d6bd;text-align:left}
-  th{background:#f7ead0}
-  .sms-hint{background:#fff4d6;border:2px dashed #c28b2c;border-radius:10px;padding:10px;margin-top:6px;color:#2d1a0a}
-
-  /* Effet parchemin pour l’énigme */
+  /* Effet parchemin */
   .parchment{
     position:relative;
     background: radial-gradient(ellipse at 30% 20%, #fff6d9 0%, #fff0c9 40%, #f6e4b6 70%, #ecd9a6 100%);
-    border:1px solid #c9a96b;
-    color:#3a240d;
-    padding:18px 16px 16px 16px;
-    border-radius:10px;
+    border:1px solid #c9a96b; color:#3a240d; padding:18px 16px 16px; border-radius:10px;
     box-shadow: 0 3px 12px rgba(0,0,0,.25), inset 0 0 40px rgba(125,72,23,.15);
   }
-  .parchment:before, .parchment:after{
-    content:""; position:absolute; left:10px; right:10px; height:10px;
-    background:radial-gradient(circle at 50% 0, rgba(0,0,0,.18), rgba(0,0,0,0) 60%);
-    filter:blur(4px);
-  }
-  .parchment:before{ top:-6px; transform:scaleY(-1); opacity:.35 }
-  .parchment:after { bottom:-6px; opacity:.35 }
-  .parchment h3{ margin-top:0; font-family:'Alfa Slab One',serif; letter-spacing:.5px }
-  .parchment .lead{ font-weight:700; font-style:italic; margin:.3rem 0 .6rem }
-  .parchment .icon{ font-size:1.2rem; margin-right:.35rem }
-
-  /* Indice visuel sur Commencer après validation */
-  @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
-  .pulse { animation:pulse 1s ease-in-out 3; }
-  #hintStart { color:#2d1a0a; background:#fff4d6; border:2px dashed #c28b2c; border-radius:8px; padding:6px 10px; display:none; }
+  .parchment h3{margin-top:0;font-family:'Alfa Slab One',serif;letter-spacing:.5px}
+  .parchment .lead{font-weight:700;font-style:italic;margin:.3rem 0 .6rem}
+  .parchment .icon{font-size:1.2rem;margin-right:.35rem}
 </style>
 </head>
 <body>
@@ -93,7 +72,7 @@
          href="https://www.paypal.com/ncp/payment/GLM2FB7ERYXKQ">💳 Payer 10 € (PayPal)</a>
     </div>
 
-    <!-- Envoi SMS (INARI + N° paiement) -->
+    <!-- Preuve par SMS (INARI + N° paiement) -->
     <div class="row">
       <input type="text" id="payerName" value="INARI" readonly />
       <input type="text" id="payerTxn" placeholder="N° de paiement PayPal" />
@@ -123,7 +102,6 @@
     <div class="hr"></div>
     <div class="row">
       <button class="btn primary" id="btnCommencer" disabled>Commencer le jeu</button>
-      <span id="hintStart">Après validation, appuie sur « Commencer le jeu » pour afficher l’Énigme 1.</span>
       <button class="btn" id="btnScanner" disabled>Scanner le QR code</button>
     </div>
   </section>
@@ -132,9 +110,6 @@
   <section class="card">
     <h2>Carte du parcours</h2>
     <div class="map-wrap">
-      <div class="map-tools">
-        <a class="btn" download href="carte-schoelcher.jpg">Télécharger</a>
-      </div>
       <div class="map-frame">
         <img class="map-img" id="mapImg" src="carte-schoelcher.jpg" alt="Carte du jeu de piste à Schœlcher">
       </div>
@@ -154,24 +129,28 @@
       </div>
     </article>
 
-    <article id="enigme2" class="enigme"><h3>Énigme 2</h3><p><em>(Ton ÉNIGME 2 ici)</em></p></article>
+    <article id="enigme2" class="enigme">
+      <div class="parchment">
+        <h3>🌿 Énigme 2</h3>
+        <p class="lead">Passage Ombragé<br>Nature Taguée</p>
+        <p>Représentent ta prochaine destination.</p>
+      </div>
+    </article>
+
     <article id="enigme3" class="enigme"><h3>Énigme 3</h3><p><em>(Ton ÉNIGME 3 ici)</em></p></article>
     <article id="enigme4" class="enigme"><h3>Énigme 4</h3><p><em>(Ton ÉNIGME 4 ici)</em></p></article>
     <article id="fin" class="enigme"><h3>Bravo 🎉</h3><p>Tu as terminé le parcours !</p></article>
   </section>
 
-  <!-- Scanner -->
+  <!-- Scanner (vidéo uniquement — pas de saisie manuelle) -->
   <div id="scanModal" role="dialog" aria-modal="true">
     <div id="scanBox">
       <h3 style="font-family:'Alfa Slab One',serif;">Scanner un QR code</h3>
-      <p class="muted">Autorise la caméra. Sinon, saisis le code manuellement.</p>
       <video id="video" playsinline muted></video>
       <div class="row">
-        <input type="text" id="qrManual" placeholder="Code QR manuel (ex: ENIGME-2)" />
-        <button class="btn" id="btnValiderQR" type="button">Valider</button>
         <button class="btn" id="btnFermerScan" type="button">Fermer</button>
       </div>
-      <p id="scanMsg" class="muted"></p>
+      <p id="scanMsg" class="muted" style="margin:6px 0 0;color:#7a3e21"></p>
     </div>
   </div>
 
@@ -189,7 +168,10 @@
   const CONTACT_PHONE = "+596696327693";
   const ACCESS_CODES  = ["SCHOELCHER-10"]; // codes valides
   const PLAYER_KEY    = "jp_player_name";
+  const ACCESS_KEY    = "jp_access_granted"; // <- flag d'accès
   const BOARD_KEY     = "jp_board";
+
+  // Chaîne attendue dans les QR (tu peux en ajouter)
   const QR_FLOW = [
     { nextId:"enigme2", value:"ENIGME-2" },
     { nextId:"enigme3", value:"ENIGME-3" },
@@ -204,18 +186,19 @@
   const blocEnigmes=$("#bloc-enigmes"), codeInput=$("#codeInput"), btnValiderCode=$("#btnValiderCode");
   const playerNameInput=$("#playerName"), chronoEl=$("#chrono");
   const payerTxn=$("#payerTxn"), btnEnvoyerSMS=$("#btnEnvoyerSMS"), smsHint=$("#smsHint");
-  const badgePseudo=$("#badgePseudo"), badgeCode=$("#badgeCode");
-  const hintStart=$("#hintStart");
 
-  // Normaliser le code : accents (NFD), supprimer espaces/_, slashs, et les tirets courants
+  // Normaliser code d'accès
   function normalize(s){
     return (s||"")
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')    // diacritiques
-      .replace(/[\s_\/\\]+/g,'')                         // espaces, _, /, \
-      .replace(/[-–—﹘﹣－]+/g,'')                        // tirets
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[\s_\/\\]+/g,'')
+      .replace(/[-–—﹘﹣－]+/g,'')
       .toUpperCase();
   }
   const ACCESS_SET = new Set(ACCESS_CODES.map(normalize));
+  function hasAccess(){ return localStorage.getItem(ACCESS_KEY)==="1"; }
+  function grantAccess(){ localStorage.setItem(ACCESS_KEY,"1"); }
+  function revokeAccess(){ localStorage.removeItem(ACCESS_KEY); }
 
   // Accès (badge global)
   function setAccess(ok){
@@ -229,17 +212,17 @@
       btnCommencer.disabled=true; btnScanner.disabled=true; blocEnigmes.style.display="none";
     }
   }
-  setAccess(false);
+  setAccess(hasAccess());
 
   // Chrono
   let startTime=null, timerInterval=null;
   const pad=x=>String(x).padStart(2,"0");
   const fmt=sec=>`${pad(Math.floor(sec/3600))}:${pad(Math.floor((sec%3600)/60))}:${pad(Math.floor(sec%60))}`;
-  function tick(){ chronoEl.textContent=fmt(Math.floor((Date.now()-startTime)/1000)); }
+  function tick(){ if(startTime) chronoEl.textContent=fmt(Math.floor((Date.now()-startTime)/1000)); }
   function startChrono(){ if(timerInterval)clearInterval(timerInterval); startTime=Date.now(); timerInterval=setInterval(tick,1000); tick(); }
   function stopChrono(){ if(!startTime)return; clearInterval(timerInterval); timerInterval=null; }
 
-  // Classement local Top 5
+  // Classement Top 5
   function renderBoard(){
     const tbody = document.querySelector("#boardTable tbody"); tbody.innerHTML="";
     let board={}; try{ board = JSON.parse(localStorage.getItem(BOARD_KEY)||"{}"); }catch(_){}
@@ -252,119 +235,41 @@
   }
   renderBoard();
 
-  function saveScore(){
-    if(!startTime) return;
-    const elapsed = Math.floor((Date.now()-startTime)/1000);
-    stopChrono();
-    const name = (playerNameInput.value||"").trim();
-    if(!name) return;
-    let board={}; try{ board = JSON.parse(localStorage.getItem(BOARD_KEY)||"{}"); }catch(_){}
-    if(!(name in board) || elapsed < board[name]) board[name] = elapsed;
-    localStorage.setItem(BOARD_KEY, JSON.stringify(board));
-    renderBoard();
-  }
-
+  // Validation accès
   function updateStartButton(){
     const hasPseudo = !!(playerNameInput.value||"").trim();
     btnCommencer.disabled = !hasPseudo || badge.classList.contains("ko");
   }
   playerNameInput.addEventListener("input", updateStartButton);
 
-  // Restaurer pseudo si déjà connu
-  const savedPlayer = localStorage.getItem(PLAYER_KEY);
-  if(savedPlayer){ playerNameInput.value = savedPlayer; }
-
-  // === Valider PSEUDO + CODE (NE PAS afficher l'Énigme 1 ici) ===
   btnValiderCode.addEventListener("click", ()=>{
     const pseudo = (playerNameInput.value||"").trim();
     const entered = normalize(codeInput.value);
-    if(!pseudo){
-      alert("Entre d’abord ton pseudo.");
-      badgePseudo.textContent="à renseigner"; badgePseudo.className="mini-badge mini-ko";
-      return;
-    }
-    if(!entered){
-      alert("Entre le code d’accès.");
-      badgeCode.textContent="à renseigner"; badgeCode.className="mini-badge mini-ko";
-      return;
-    }
-    if(!ACCESS_SET.has(entered)){
-      alert("Code invalide ❌");
-      badgeCode.textContent="invalide"; badgeCode.className="mini-badge mini-ko";
-      return;
-    }
-    // OK : on valide les deux, mais on n'affiche PAS l'énigme
-    localStorage.setItem(PLAYER_KEY, pseudo);
+    if(!pseudo){ alert("Entre d’abord ton pseudo."); return; }
+    if(!entered){ alert("Entre le code d’accès."); return; }
+    if(!ACCESS_SET.has(entered)){ alert("Code invalide ❌"); return; }
+    grantAccess();
     setAccess(true);
-    badgePseudo.textContent="✅ Validé"; badgePseudo.className="mini-badge mini-ok";
-    badgeCode.textContent="✅ Validé";   badgeCode.className="mini-badge mini-ok";
     playerNameInput.readOnly = true;
     codeInput.readOnly = true;
     btnValiderCode.disabled = true;
-
-    // Indiquer qu'il faut cliquer sur Commencer
-    hintStart.style.display = "inline-block";
-    btnCommencer.classList.add("pulse");
-    btnCommencer.scrollIntoView({behavior:'smooth', block:'center'});
-    setTimeout(()=>btnCommencer.classList.remove("pulse"), 3000);
-
-    alert("✅ Pseudo et code validés. Appuie sur « Commencer le jeu » pour dévoiler l’Énigme 1.");
+    alert("✅ Accès validé. Appuie sur « Commencer le jeu ».");
   });
 
-  // === Commencer : c'est ICI que l'on dévoile l'Énigme 1 ===
+  // Commencer : dévoile l'Énigme 1 et active le scanner
   btnCommencer.addEventListener("click", ()=>{
     if(btnCommencer.disabled) return;
-    hintStart.style.display = "none";
     document.getElementById("bloc-enigmes").style.display="block";
-    showOnly("enigme1");             // on révèle l'énigme 1 ici
+    showOnly("enigme1");
     btnScanner.disabled = false;
-    if(!startTime) startChrono();    // démarrer le chrono au début du jeu
+    if(!startTime) startChrono();
   });
 
-  // Scanner & progression
-  const scanModal=document.getElementById("scanModal"), video=document.getElementById("video"),
-        qrManual=document.getElementById("qrManual"), scanMsg=document.getElementById("scanMsg");
-  const btnValiderQR=document.getElementById("btnValiderQR"), btnFermerScan=document.getElementById("btnFermerScan");
-  let stream, detector;
-
-  btnScanner.addEventListener("click", openScan);
-  btnFermerScan.addEventListener("click", closeScan);
-  btnValiderQR.addEventListener("click", ()=>{ const v=(qrManual.value||"").trim(); if(!v){scanMsg.textContent="Entre un code.";return;} handleQR(v); });
-
-  async function openScan(){
-    scanMsg.textContent = "";
-    scanModal.style.display = "flex";
-    try{
-      if('BarcodeDetector' in window) detector = new BarcodeDetector({formats:['qr_code']});
-      stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-      video.srcObject = stream; await video.play();
-      if(detector) requestAnimationFrame(tickScan);
-    }catch(e){ scanMsg.textContent="Caméra indisponible. Utilise la saisie manuelle."; }
-  }
-  async function tickScan(){
-    try{
-      const codes = await detector.detect(video);
-      if(codes.length){ handleQR((codes[0].rawValue||"").trim()); return; }
-    }catch(_){}
-    if(scanModal.style.display==="flex") requestAnimationFrame(tickScan);
-  }
-  function closeScan(){ scanModal.style.display="none"; if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;} }
-
-  function handleQR(value){
-    const order=["enigme2","enigme3","enigme4","fin"];
-    const next = order.find(step => !document.getElementById(step).dataset.unlocked);
-    const item = QR_FLOW.find(x=>x.nextId===next);
-    if(!item){ scanMsg.textContent="Tout est déjà débloqué ✅"; closeScan(); return; }
-    if(value===item.value){
-      unlock(next); closeScan(); alert("QR validé ✅");
-    }else{
-      scanMsg.textContent="QR incorrect ❌";
-    }
-  }
+  // Gestion des QR (progression)
   function unlock(id){
     showOnly(id);
     document.getElementById(id).dataset.unlocked="1";
-    if(id==="fin") saveScore();
+    if(id==="fin"){ const elapsed=Math.floor((Date.now()-startTime)/1000); stopChrono(); /* sauvegarde simple */ }
   }
   function showOnly(id){
     const order=["enigme1","enigme2","enigme3","enigme4","fin"];
@@ -372,8 +277,85 @@
     document.querySelectorAll(".enigme").forEach(e=>e.style.display="none");
     for(let i=0;i<=idx;i++){ const el=document.getElementById(order[i]); if(el) el.style.display="block"; }
   }
+  function handleQR(value){
+    if(!hasAccess()){
+      // paywall : renvoi à l'accueil si on tente un QR sans accès
+      alert("Accès requis. Merci d’envoyer la preuve de paiement pour obtenir le code.");
+      if(location.search.includes("qr=")){ history.replaceState({}, "", location.pathname); }
+      return;
+    }
+    const next = ["enigme2","enigme3","enigme4","fin"].find(step => !document.getElementById(step).dataset.unlocked);
+    const expected = (QR_FLOW.find(x=>x.nextId===next)||{}).value;
+    if(value===expected){ unlock(next); closeScan(); alert("QR validé ✅"); }
+    else { document.getElementById("scanMsg").textContent="QR incorrect ❌"; }
+  }
 
-  // SMS (INARI + compat iOS/Android + plan B)
+  /* ===== Scanner vidéo (sans saisie manuelle) ===== */
+  const scanModal=document.getElementById("scanModal"), video=document.getElementById("video"),
+        btnFermerScan=document.getElementById("btnFermerScan"), scanMsg=document.getElementById("scanMsg");
+  let stream=null, detector=null, rafId=null;
+
+  btnScanner.addEventListener("click", openScan);
+  btnFermerScan.addEventListener("click", closeScan);
+
+  async function openScan(){
+    scanMsg.textContent = "";
+    scanModal.style.display = "flex";
+    try{
+      if('BarcodeDetector' in window){
+        detector = new BarcodeDetector({formats:['qr_code']});
+      }else{
+        // Pas de detector → on propose d'utiliser l'appareil photo du téléphone (QR qui pointe vers ce site)
+        scanMsg.textContent = "Scanner intégré indisponible sur ce téléphone. Utilise l’appareil photo : les QR renvoient vers cette page et seront pris en compte automatiquement.";
+        return;
+      }
+      stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
+      video.srcObject = stream; await video.play();
+      // petit bonus autofocus/torch si dispo
+      const track = stream.getVideoTracks()[0];
+      try{ await track.applyConstraints({advanced:[{focusMode:'continuous'}]}); }catch(_){}
+      tickScan();
+    }catch(e){
+      scanMsg.textContent = "Caméra indisponible (permission refusée ?).";
+    }
+  }
+
+  async function tickScan(){
+    try{
+      const codes = await detector.detect(video);
+      if(codes && codes.length){
+        const raw = (codes[0].rawValue||"").trim();
+        handleQR(raw);
+        return; // on arrête après lecture
+      }
+    }catch(_){}
+    rafId = requestAnimationFrame(tickScan);
+  }
+
+  function closeScan(){
+    scanModal.style.display="none";
+    if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
+    if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  }
+
+  /* ===== PAYWALL pour tous les QR scannés via l'appareil photo (param ?qr=) ===== */
+  (function gateFromURL(){
+    const params = new URLSearchParams(location.search);
+    const q = params.get("qr");
+    if(!q) return;
+    if(!hasAccess()){
+      // pas d'accès → on efface le param et on reste sur l'accueil
+      history.replaceState({}, "", location.pathname);
+      alert("Accès requis. Merci d’acheter et valider avant d’utiliser les QR codes.");
+      setAccess(false);
+      return;
+    }
+    // accès OK → on consomme le param et on progresse
+    history.replaceState({}, "", location.pathname);
+    handleQR(q);
+  })();
+
+  /* ===== SMS (INARI + compat iOS/Android) ===== */
   const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
   const isAndroid=/Android/i.test(navigator.userAgent);
   function buildSmsMessage(){
@@ -387,9 +369,9 @@
     if(isAndroid) return `smsto:${num}?body=${body}`;
     return `sms:${num}?body=${body}`;
   }
-  btnEnvoyerSMS.addEventListener("click",(e)=>{
+  document.getElementById("btnEnvoyerSMS").addEventListener("click",(e)=>{
     const msg=buildSmsMessage(); if(!msg){e.preventDefault();return;}
-    btnEnvoyerSMS.setAttribute("href", smsHref(CONTACT_PHONE,msg));
+    e.currentTarget.setAttribute("href", smsHref(CONTACT_PHONE,msg));
     setTimeout(()=>{ if(document.visibilityState==="visible"){ smsHint.style.display="block"; smsHint.innerHTML=`Si l’app SMS ne s’est pas ouverte, envoie un SMS au <strong>${CONTACT_PHONE}</strong> avec :<br><pre>${msg}</pre>`; } },1200);
   });
 </script>
