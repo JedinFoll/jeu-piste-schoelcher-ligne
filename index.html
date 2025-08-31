@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Jeu de Piste – Schœlcher</title>
+<title>Jeu de Piste – Schœlcher (Safe)</title>
 <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap" rel="stylesheet">
 <style>
   :root{ --ink:#f5f0e6; --marron:#5a2e0c; --marron-light:#7a3e21; --marron-dark:#2d1405; --parch:#fffdf4; --frame:#a97442; --shadow:rgba(0,0,0,.4); }
@@ -29,31 +29,14 @@
   .mini-ok{background:#e9fbe9;border-color:#bfe9bf;color:#164a16}
   .mini-ko{background:#fff4f4;border-color:#f2c1c1;color:#7b1a1a}
 
-  .map-wrap{position:relative;width:100%;overflow:auto;background:#faf3e0;border:2px solid #a97442;border-radius:12px}
-  .map-frame{width:100%;height:min(80vh,700px);display:flex;align-items:center;justify-content:center}
-  .map-img{max-height:100%;max-width:100%;display:block;border-radius:8px}
-  .map-tools{position:absolute;right:12px;top:12px;display:flex;gap:6px}
-
   .hr{height:2px;margin:16px 0;background:#7a3e21}
   .enigme{display:none}
 
-  /* Scan modal */
-  #scanModal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
-  #scanBox{background:#fffef6;border-radius:12px;max-width:520px;width:100%;padding:16px;border:2px solid #a97442;box-shadow:4px 4px 10px var(--shadow)}
-  video{width:100%;border-radius:10px;border:2px solid #a97442;background:#000}
-
-  .hud{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .chip{background:#fff0cc;border:2px solid #e2b24c;border-radius:999px;padding:6px 12px;font-weight:700}
-
-  table{width:100%;border-collapse:collapse;margin-top:.5rem}
-  th,td{padding:8px;border-bottom:1px solid #e4d6bd;text-align:left}
-  th{background:#f7ead0}
-  .sms-hint{background:#fff4d6;border:2px dashed #c28b2c;border-radius:10px;padding:10px;margin-top:6px;color:#2d1a0a}
-
-  /* Mise en évidence du bouton Commencer après validation */
-  @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
-  .pulse { animation:pulse 1s ease-in-out 3; }
   #hintStart { color:#2d1a0a; background:#fff4d6; border:2px dashed #c28b2c; border-radius:8px; padding:6px 10px; display:none; }
+
+  /* Journal technique */
+  #log{white-space:pre-wrap; background:#111; color:#e7ffd8; padding:10px; border-radius:8px; font-family:ui-monospace,Consolas,monospace; font-size:.9rem; max-height:200px; overflow:auto; border:2px solid #2a2a2a}
+  #log strong{color:#9be29b}
 </style>
 </head>
 <body>
@@ -62,25 +45,23 @@
     <p>Munis-toi de papier et crayon, scanne les QR codes et résous les énigmes.</p>
   </div>
 
-  <!-- Accès -->
-  <section class="card" id="acces">
+  <section class="card">
     <h2>Accès au jeu</h2>
 
     <!-- Paiement -->
     <div class="row">
-      <a class="btn primary" target="_blank" rel="noopener"
-         href="https://www.paypal.com/ncp/payment/GLM2FB7ERYXKQ">💳 Payer 10 € (PayPal)</a>
+      <a class="btn primary" target="_blank" rel="noopener" href="https://www.paypal.com/ncp/payment/GLM2FB7ERYXKQ">💳 Payer 10 € (PayPal)</a>
     </div>
 
-    <!-- Envoi SMS (INARI + N° paiement) -->
+    <!-- Envoi SMS -->
     <div class="row">
       <input type="text" id="payerName" value="INARI" readonly />
       <input type="text" id="payerTxn" placeholder="N° de paiement PayPal" />
       <a id="btnEnvoyerSMS" class="btn" href="#">Envoyer la preuve par SMS</a>
     </div>
-    <div id="smsHint" class="sms-hint" style="display:none;"></div>
+    <div id="smsHint" style="display:none; background:#fff4d6;border:2px dashed #c28b2c;border-radius:10px;padding:10px;color:#2d1a0a"></div>
 
-    <!-- Pseudo + Code + Valider (bouton après les deux champs) -->
+    <!-- Pseudo + Code + Valider (bouton APRÈS les deux champs) -->
     <div class="row">
       <div class="row" style="gap:.4rem">
         <input type="text" id="playerName" placeholder="Ton pseudo (obligatoire)" />
@@ -90,40 +71,26 @@
         <input type="text" id="codeInput" placeholder="Entrer le code d’accès reçu" />
         <span id="badgeCode" class="mini-badge mini-ko">à renseigner</span>
       </div>
-      <button class="btn" id="btnValiderCode">Valider pseudo + code</button>
+      <button class="btn" id="btnValiderCode" type="button" onclick="safeValidate()">Valider pseudo + code</button>
     </div>
 
     <!-- HUD -->
-    <div class="row hud">
-      <span class="chip">⏱ Temps : <span id="chrono">00:00:00</span></span>
-      <span>Statut : <span id="badge" class="badge ko">verrouillé</span></span>
+    <div class="row">
+      <span class="badge ko" id="badge">verrouillé</span>
+      <span style="margin-left:8px;">⏱ Temps : <strong id="chrono">00:00:00</strong></span>
     </div>
 
     <div class="hr"></div>
     <div class="row">
-      <button class="btn primary" id="btnCommencer" disabled>Commencer le jeu</button>
+      <button class="btn primary" id="btnCommencer" type="button" disabled onclick="safeStart()">Commencer le jeu</button>
       <span id="hintStart">Appuie sur « Commencer le jeu » pour afficher l’Énigme 1.</span>
-      <button class="btn" id="btnScanner" disabled>Scanner le QR code</button>
-    </div>
-  </section>
-
-  <!-- Carte -->
-  <section class="card">
-    <h2>Carte du parcours</h2>
-    <div class="map-wrap">
-      <div class="map-tools">
-        <a class="btn" download href="carte-schoelcher.jpg">Télécharger</a>
-      </div>
-      <div class="map-frame">
-        <img class="map-img" id="mapImg" src="carte-schoelcher.jpg" alt="Carte du jeu de piste à Schœlcher">
-      </div>
     </div>
   </section>
 
   <!-- Énigmes -->
   <section id="bloc-enigmes" class="card" style="display:none;">
     <h2>Énigmes</h2>
-    <p id="txtVisibility">Seule l’Énigme 1 est visible au départ. Pour débloquer les suivantes, scanne les bons QR codes dans l’ordre.</p>
+    <p>Seule l’Énigme 1 est visible au départ. Pour débloquer les suivantes, scanne les bons QR codes dans l’ordre.</p>
 
     <article id="enigme1" class="enigme"><h3>Énigme 1</h3><p><em>(Ton ÉNIGME 1 ici)</em></p></article>
     <article id="enigme2" class="enigme"><h3>Énigme 2</h3><p><em>(Ton ÉNIGME 2 ici)</em></p></article>
@@ -132,9 +99,218 @@
     <article id="fin" class="enigme"><h3>Bravo 🎉</h3><p>Tu as terminé le parcours !</p></article>
   </section>
 
-  <!-- Scanner -->
-  <div id="scanModal" role="dialog" aria-modal="true">
-    <div id="scanBox">
-      <h3 style="font-family:'Alfa Slab One',serif;">Scanner un QR code</h3>
-      <p class="muted">Autorise la caméra. Sinon, saisis le code manuellement.</p>
-      <vid
+  <!-- Journal technique -->
+  <section class="card">
+    <h2>Journal technique (aide au diagnostic)</h2>
+    <div id="log"></div>
+  </section>
+
+<script>
+/* =================== CONFIG MINIMALE =================== */
+var ACCESS_CODES = ["SCHOELCHER-10"]; // ajoute d’autres codes si besoin
+var CONTACT_PHONE = "+596696327693";
+/* ======================================================= */
+
+(function initSafe(){
+  // Journal technique + capture d'erreurs
+  var logEl = document.getElementById('log');
+  function log(msg){ logEl.innerHTML += (msg + "\\n"); logEl.scrollTop = logEl.scrollHeight; }
+  window.onerror = function(message, source, lineno, colno, error){
+    log("⚠️ ERREUR JS: " + message + " (" + source + ":" + lineno + ")");
+  };
+  log("✅ Script chargé.");
+
+  // Prévisualisation : champs présents ?
+  ['playerName','codeInput','btnValiderCode','btnCommencer','badge'].forEach(function(id){
+    if(!document.getElementById(id)){ log("⚠️ Élément manquant: " + id); }
+  });
+
+  // Écoutes basiques (et aussi des onclick inline pour compat max)
+  var pn = document.getElementById('playerName');
+  if (pn && pn.addEventListener){
+    pn.addEventListener('input', function(){ updateStartEnable(); previewBadges(); });
+  }
+  var ci = document.getElementById('codeInput');
+  if (ci && ci.addEventListener){
+    ci.addEventListener('input', function(){ previewBadges(); });
+  }
+
+  // SMS bouton
+  var btnSMS = document.getElementById('btnEnvoyerSMS');
+  if (btnSMS){
+    btnSMS.addEventListener('click', function(e){
+      var txn = (document.getElementById('payerTxn').value || '').trim();
+      if(!txn){ alert("Entre ton N° de paiement PayPal."); e.preventDefault(); return; }
+      var msg = "INARI - Paiement: " + txn;
+      var num = CONTACT_PHONE.replace(/\\s+/g,'');
+      var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      var isAndroid = /Android/i.test(navigator.userAgent);
+      var href = isIOS ? ("sms:"+num+"&body="+encodeURIComponent(msg))
+               : isAndroid ? ("smsto:"+num+"?body="+encodeURIComponent(msg))
+               : ("sms:"+num+"?body="+encodeURIComponent(msg));
+      btnSMS.setAttribute('href', href);
+      setTimeout(function(){
+        if(document.visibilityState === 'visible'){
+          var hint = document.getElementById('smsHint');
+          hint.style.display = 'block';
+          hint.innerHTML = 'Si l’app SMS ne s’est pas ouverte, envoie un SMS au <strong>'+CONTACT_PHONE+'</strong> avec :<br><pre>'+msg+'</pre>';
+        }
+      }, 1200);
+    });
+  }
+
+  log("ℹ️ Prêt. Tape un pseudo + le code puis clique « Valider pseudo + code ».");
+})();
+
+/* ======== LOGIQUE ACCÈS ULTRA-COMPATIBLE ======== */
+// Normalisation manuelle (pas de .normalize / pas de regex unicode)
+// - Retire accents via remplacement simple
+// - Retire espaces/underscores et divers tirets
+// - Met en MAJUSCULES
+function stripAccents(s){
+  var map = {
+    'à':'a','á':'a','â':'a','ä':'a','ã':'a','å':'a','ā':'a',
+    'ç':'c',
+    'è':'e','é':'e','ê':'e','ë':'e','ē':'e',
+    'ì':'i','í':'i','î':'i','ï':'i','ī':'i',
+    'ñ':'n',
+    'ò':'o','ó':'o','ô':'o','ö':'o','õ':'o','ō':'o',
+    'ù':'u','ú':'u','û':'u','ü':'u','ū':'u',
+    'ÿ':'y',
+    'À':'A','Á':'A','Â':'A','Ä':'A','Ã':'A','Å':'A','Ā':'A',
+    'Ç':'C',
+    'È':'E','É':'E','Ê':'E','Ë':'E','Ē':'E',
+    'Ì':'I','Í':'I','Î':'I','Ï':'I','Ī':'I',
+    'Ñ':'N',
+    'Ò':'O','Ó':'O','Ô':'O','Ö':'O','Õ':'O','Ō':'O',
+    'Ù':'U','Ú':'U','Û':'U','Ü':'U','Ū':'U',
+    'Ÿ':'Y'
+  };
+  var out = "", i, ch;
+  for(i=0;i<s.length;i++){ ch = s.charAt(i); out += (map[ch] || ch); }
+  return out;
+}
+function normalizeCode(raw){
+  var s = stripAccents(raw || "");
+  // retire espaces et underscores
+  s = s.replace(/[\s_]+/g,'');
+  // retire tirets les plus courants: - – — ﹘ ﹣ －
+  s = s.replace(/[-–—﹘﹣－]+/g,'');
+  return s.toUpperCase();
+}
+// set de codes autorisés
+var ACCESS_SET = (function(){
+  var set = {};
+  for (var i=0;i<ACCESS_CODES.length;i++){
+    set[ normalizeCode(ACCESS_CODES[i]) ] = true;
+  }
+  return set;
+})();
+
+function setAccess(ok){
+  var badge = document.getElementById('badge');
+  var btnStart = document.getElementById('btnCommencer');
+  var bloc = document.getElementById('bloc-enigmes');
+  if(ok){
+    badge.textContent = "déverrouillé";
+    badge.className = "badge ok";
+    btnStart.disabled = !document.getElementById('playerName').value.trim();
+  }else{
+    badge.textContent = "verrouillé";
+    badge.className = "badge ko";
+    btnStart.disabled = true;
+    if (bloc) bloc.style.display = "none";
+  }
+}
+
+function previewBadges(){
+  var pseudo = (document.getElementById('playerName').value||"").trim();
+  var code   = (document.getElementById('codeInput').value||"").trim();
+  var badgeP = document.getElementById('badgePseudo');
+  var badgeC = document.getElementById('badgeCode');
+  badgeP.textContent = pseudo ? "saisi" : "à renseigner";
+  badgeP.className = "mini-badge " + (pseudo ? "mini-ok" : "mini-ko");
+  badgeC.textContent = code ? "saisi" : "à renseigner";
+  badgeC.className = "mini-badge " + (code ? "mini-ok" : "mini-ko");
+}
+
+function updateStartEnable(){
+  var btnStart = document.getElementById('btnCommencer');
+  var ok = document.getElementById('badge').className.indexOf('ok') !== -1;
+  var hasPseudo = !!(document.getElementById('playerName').value||"").trim();
+  btnStart.disabled = !(ok && hasPseudo);
+}
+
+// Appelé par le bouton (et aussi via addEventListener si dispo)
+function safeValidate(){
+  var logEl = document.getElementById('log');
+  function log(m){ logEl.innerHTML += (m+"\\n"); logEl.scrollTop = logEl.scrollHeight; }
+
+  try{
+    var pseudo = (document.getElementById('playerName').value||"").trim();
+    var rawCode = (document.getElementById('codeInput').value||"").trim();
+    if(!pseudo){ alert("Entre d’abord ton pseudo."); log("Pseudo manquant."); return; }
+    if(!rawCode){ alert("Entre le code d’accès."); log("Code manquant."); return; }
+
+    var norm = normalizeCode(rawCode);
+    log("Code saisi (normalisé) = " + norm);
+
+    if (!ACCESS_SET[norm]){
+      alert("Code invalide ❌");
+      document.getElementById('badgeCode').textContent="invalide";
+      document.getElementById('badgeCode').className="mini-badge mini-ko";
+      log("Refusé (pas dans ACCESS_SET).");
+      return;
+    }
+
+    // OK → badges + verrouillage + accès
+    document.getElementById('badgePseudo').textContent="✅ Validé";
+    document.getElementById('badgePseudo').className="mini-badge mini-ok";
+    document.getElementById('badgeCode').textContent="✅ Validé";
+    document.getElementById('badgeCode').className="mini-badge mini-ok";
+
+    document.getElementById('playerName').readOnly = true;
+    document.getElementById('codeInput').readOnly   = true;
+    document.getElementById('btnValiderCode').disabled = true;
+
+    setAccess(true);
+    updateStartEnable();
+
+    // Indice + scroll vers le bouton Commencer
+    document.getElementById('hintStart').style.display = "inline-block";
+    document.getElementById('btnCommencer').scrollIntoView({behavior:'smooth', block:'center'});
+
+    alert("✅ Pseudo et code validés. Appuie sur « Commencer le jeu » pour afficher l’Énigme 1.");
+    log("Validation OK → accès déverrouillé.");
+  }catch(e){
+    log("⚠️ Exception: " + (e&&e.message?e.message:e));
+  }
+}
+
+var startTime=null, timerInterval=null;
+function fmt(sec){ function pad(x){return String(x).padStart(2,'0');} return pad(Math.floor(sec/3600))+":"+pad(Math.floor((sec%3600)/60))+":"+pad(Math.floor(sec%60)); }
+function tick(){ if(startTime){ var s = Math.floor((Date.now()-startTime)/1000); document.getElementById('chrono').textContent = fmt(s); } }
+
+function safeStart(){
+  if (document.getElementById('btnCommencer').disabled) return;
+  document.getElementById('hintStart').style.display = "none";
+  document.getElementById('bloc-enigmes').style.display = "block";
+  // Affiche uniquement Enigme 1
+  var ids=["enigme1","enigme2","enigme3","enigme4","fin"];
+  for (var i=0;i<ids.length;i++){
+    var el=document.getElementById(ids[i]); if(el) el.style.display = (i===0?"block":"none");
+  }
+  // Chrono simple
+  startTime = Date.now();
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(tick, 1000);
+  tick();
+
+  // Note dans le log
+  var logEl = document.getElementById('log');
+  logEl.innerHTML += "⏱ Chrono démarré. Enigme 1 affichée.\\n";
+  logEl.scrollTop = logEl.scrollHeight;
+}
+</script>
+</body>
+</html>
