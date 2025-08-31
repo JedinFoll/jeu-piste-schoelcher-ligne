@@ -122,16 +122,29 @@
     <h2>Énigmes</h2>
     <p id="txtVisibility">Seule l’Énigme 1 est visible au départ. Pour débloquer les suivantes, scanne les bons QR codes dans l’ordre.</p>
 
+    <!-- ÉNIGME 1 : ton PDF intégré en parchemin -->
     <article id="enigme1" class="enigme">
-      <div class="parchment">
-        <h3>🗺️ Énigme 1</h3>
-        <p class="lead"><span class="icon">⚡️</span>La symétrie t'emportera au premier endroit.</p>
-        <p>Là où l’électricité est source d’énergie, tu trouveras l’essence de ta quête.</p>
-      </div>
-      <div class="row scan-row">
-        <button class="btn" data-expects="ENIGME-2" onclick="scanNext(this)">Scanner le QR pour l’Énigme 2</button>
-      </div>
-    </article>
+  <div class="parchment">
+    <h3>🗺️ Énigme 1</h3>
+
+    <!-- Viewer Office pour affichage du .docx -->
+    <div id="enigme1Doc" style="aspect-ratio: 16/9; width:100%; max-height: 520px;">
+      <iframe id="docxFrame" title="Énigme 1"
+              style="width:100%; height:100%; border:0; border-radius:10px;"
+              loading="lazy" referrerpolicy="no-referrer"></iframe>
+    </div>
+
+    <!-- Lien secours si l’iframe est bloquée -->
+    <p style="margin-top:.5rem;">
+      Si le document ne s’affiche pas, <a id="docxDirectLink" href="enigme1.docx" target="_blank" rel="noopener">ouvre l’Énigme 1 (DOCX)</a>.
+    </p>
+  </div>
+
+  <div class="row scan-row">
+    <button class="btn" data-expects="ENIGME-2" onclick="scanNext(this)">Scanner le QR pour l’Énigme 2</button>
+  </div>
+</article>
+
 
     <article id="enigme2" class="enigme">
       <div class="parchment">
@@ -183,6 +196,27 @@
       <p id="scanMsg" class="muted" style="margin:6px 0 0;color:#7a3e21"></p>
     </div>
   </div>
+// ==== Affichage du DOCX de l’Énigme 1 via Office Viewer ====
+(function mountDocxViewer(){
+  try{
+    // Ton fichier placé à la racine du site : /enigme1.docx
+    const DOCX_PATH = "enigme1.docx";
+    const absoluteDocUrl = new URL(DOCX_PATH, location.href).href;
+
+    // Office viewer (mode embed). wdAr=1.7777 ~ format paysage 16:9
+    const officeEmbed = "https://view.officeapps.live.com/op/embed.aspx?src="
+                        + encodeURIComponent(absoluteDocUrl)
+                        + "&wdAr=1.7777";
+
+    const ifr = document.getElementById("docxFrame");
+    if (ifr) ifr.src = officeEmbed;
+
+    const a = document.getElementById("docxDirectLink");
+    if (a) a.href = absoluteDocUrl;
+  }catch(e){
+    // En cas d’échec, on laisse le lien direct <a> faire le job
+  }
+})();
 
   <!-- Classement -->
   <section class="card" id="classement">
@@ -197,9 +231,13 @@
   /* =================== CONFIG =================== */
   const CONTACT_PHONE = "+596696327693";
   const ACCESS_CODES = ["SCHOELCHER-10"];
-  const KEY_ACCESS="jp_access"; const KEY_PSEUDO="jp_player";
-  const KEY_STARTED="jp_started"; const KEY_UNLOCKED="jp_unlocked";
-  const KEY_START_TIME="jp_start_time";
+
+  /* ====== STORAGE KEYS ====== */
+  const KEY_ACCESS="jp_access";          // "1" si accès valide
+  const KEY_PSEUDO="jp_player";
+  const KEY_STARTED="jp_started";        // "1" si bouton Commencer cliqué
+  const KEY_UNLOCKED="jp_unlocked";      // JSON: ["enigme1","enigme2",...]
+  const KEY_START_TIME="jp_start_time";  // timestamp ms pour chrono
 
   /* ====== DOM ====== */
   const $=s=>document.querySelector(s);
@@ -233,7 +271,6 @@
     localStorage.setItem(KEY_START_TIME, String(startTime));
     timerInterval=setInterval(tick,1000); tick();
   }
-  function stopChrono(){ if(timerInterval) clearInterval(timerInterval); timerInterval=null; }
 
   /* ====== PROGRESSION ====== */
   const allOrder=["enigme1","enigme2","enigme3","enigme4","fin"];
@@ -261,7 +298,6 @@
     localStorage.setItem(KEY_PSEUDO, playerNameInput.value||"");
     updateStartButton();
   });
-
   btnValiderCode.addEventListener("click", ()=>{
     const pseudo=(playerNameInput.value||"").trim();
     const entered=normalize(codeInput.value);
@@ -274,7 +310,7 @@
     alert("✅ Accès validé. Appuie sur « Commencer le jeu ».");
   });
 
-  /* ====== DEMARRAGE ====== */
+  /* ====== DÉMARRAGE ====== */
   btnCommencer.addEventListener("click", ()=>{
     if(btnCommencer.disabled) return;
     localStorage.setItem(KEY_STARTED,"1");
@@ -282,6 +318,21 @@
     renderProgress();
     startChrono();
   });
+
+  /* ====== EXTRACTION CODE À PARTIR DE N’IMPORTE QUOI (URL/TEXTE) ====== */
+  function extractQR(raw){
+    const s = String(raw||"").trim();
+    // URL avec ?qr=CODE
+    try{
+      const u = new URL(s);
+      const q = u.searchParams.get("qr");
+      if(q) return q.toUpperCase();
+    }catch(e){ /* pas une URL */ }
+    // Cherche ENIGME-2/3/4 ou FIN dans n'importe quel texte
+    const m = s.toUpperCase().match(/\b(ENIGME-[234]|FIN)\b/);
+    if(m) return m[1];
+    return null;
+  }
 
   /* ====== SCANNER PAR ÉNIGME ====== */
   let stream=null, detector=null, rafId=null, expectedNow=null;
@@ -298,8 +349,7 @@
     try{
       if('BarcodeDetector' in window){ detector=new BarcodeDetector({formats:['qr_code']}); }
       else{
-        // Fallback : demander d'utiliser l'appareil photo natif (ouvre l'URL ?qr=...)
-        scanMsg.textContent="Scanner intégré indisponible. Utilise l’appareil photo du téléphone : le QR doit ouvrir cette page avec ?qr="+(expectedNow||"ENIGME-2")+".";
+        scanMsg.textContent="Scanner intégré indisponible. Utilise l’appareil photo : le QR doit ouvrir cette page avec ?qr="+(expectedNow||"ENIGME-2")+" (paywall actif).";
         return;
       }
       stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
@@ -312,8 +362,9 @@
       const codes=await detector.detect(video);
       if(codes && codes.length){
         const raw=(codes[0].rawValue||"").trim();
-        progressFromQR(raw);
-        closeScan(); return;
+        const code = extractQR(raw);
+        if(code){ progressFromQR(code); closeScan(); return; }
+        else { scanMsg.textContent = "QR non reconnu (attendu : ENIGME-2/3/4 ou FIN)."; }
       }
     }catch(_){}
     rafId=requestAnimationFrame(tickScan);
@@ -324,43 +375,46 @@
     if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;}
   }
 
-  function progressFromQR(value){
-    // Séquence attendue (si bouton d’une énigme spécifie une valeur, on s’en sert)
-    const orderMap={
-      "ENIGME-2":"enigme2",
-      "ENIGME-3":"enigme3",
-      "ENIGME-4":"enigme4",
-      "FIN":"fin"
-    };
-    const targetId = orderMap[value];
+  function progressFromQR(code){
+    if(!hasAccess()){
+      alert("Accès requis. Merci d’acheter et valider avant d’utiliser les QR codes.");
+      return;
+    }
+    const orderMap={ "ENIGME-2":"enigme2", "ENIGME-3":"enigme3", "ENIGME-4":"enigme4", "FIN":"fin" };
+    const targetId = orderMap[code];
     if(!targetId){ alert("QR inconnu ❌"); return; }
 
-    // Vérifie progression (pas de saut d’étape)
     const arr=getUnlocked();
-    const nextId = allOrder.find(id=>!arr.includes(id) && id!=="enigme1") || "fin";
-    if(targetId!==nextId){ alert("Ce QR n’est pas attendu maintenant."); return; }
+    const sequence=["enigme1","enigme2","enigme3","enigme4","fin"];
+    const nextId=sequence.find(id=>!arr.includes(id) && id!=="enigme1") || "fin";
 
+    if(targetId!==nextId){
+      if(arr.includes(targetId)){ unlock(targetId); renderProgress(); alert("Étape déjà débloquée ✅"); }
+      else { alert("Ce QR n’est pas attendu maintenant."); }
+      return;
+    }
     unlock(targetId);
     alert("QR validé ✅");
   }
 
-  /* ====== PAYWALL pour tous les QR (URL ?qr=...) ====== */
+  /* ====== PAYWALL & PROGRESSION VIA URL ?qr=... ====== */
   (function gateFromURL(){
     const params=new URLSearchParams(location.search);
     const q=params.get("qr");
+    if(q) history.replaceState({}, "", location.pathname); // nettoie l'URL
     if(!q) return;
-    history.replaceState({}, "", location.pathname);
+
     if(!hasAccess()){
       alert("Accès requis. Merci de valider votre paiement avant d’utiliser les QR codes.");
       setAccessUI(false); return;
     }
-    // Assure que le jeu est démarré
     if(localStorage.getItem(KEY_STARTED)!=="1"){
       localStorage.setItem(KEY_STARTED,"1");
       const arr=getUnlocked(); if(!arr.includes("enigme1")){ arr.push("enigme1"); setUnlocked(arr); }
     }
-    progressFromQR(q);
-    renderProgress();
+    const code = extractQR(q);
+    if(code){ progressFromQR(code); renderProgress(); }
+    else { alert("QR non reconnu via l’URL."); }
   })();
 
   /* ====== RESTAURATION AU CHARGEMENT ====== */
