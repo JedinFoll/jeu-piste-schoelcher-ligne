@@ -6,50 +6,22 @@
 <title>Jeu de Piste – Schœlcher</title>
 <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap" rel="stylesheet">
 <style>
-  :root{ --ink:#f5f0e6; --marron:#5a2e0c; --marron-light:#7a3e21; --marron-dark:#2d1405; --parch:#fff9e9; --frame:#a97442; --shadow:rgba(0,0,0,.4); }
-  *{box-sizing:border-box}
+  :root{ --ink:#f5f0e6; --marron:#5a2e0c; --marron-light:#7a3e21; --marron-dark:#2d1405; --frame:#a97442; --shadow:rgba(0,0,0,.4); }
   body{font-family:'Trebuchet MS',Arial,sans-serif;background:var(--marron);margin:0;padding:24px;line-height:1.6;color:var(--ink)}
   .hero{background:var(--marron-light);border:3px solid var(--frame);border-radius:12px;padding:18px;margin-bottom:18px;box-shadow:4px 4px 8px var(--shadow)}
-  .hero h1{font-family:'Alfa Slab One',serif;color:#f5e1c4;text-shadow:2px 2px 0 var(--marron-dark);margin:0 0 .5rem}
-  .hero p{margin:.25rem 0 0;color:#f0e6d2}
-
+  .hero h1{font-family:'Alfa Slab One',serif;color:#f5e1c4;text-shadow:2px 2px 0 var(--marron-dark)}
   .card{background:#fffdf4;border:2px solid var(--frame);border-radius:12px;padding:18px;margin-top:16px;color:#2d1a0a;box-shadow:3px 3px 6px var(--shadow)}
-  h2{font-family:'Alfa Slab One',serif;color:var(--marron-dark)}
-  .row{display:flex;gap:.6rem;flex-wrap:wrap;margin:.4rem 0 1rem;align-items:center}
-  .btn{display:inline-block;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:700;border:2px solid var(--frame);background:#d4a373;color:#2d1a0a;cursor:pointer;box-shadow:2px 2px 4px var(--shadow);transition:transform .18s,background .18s,color .18s}
-  .btn:hover{background:#b97d4e;color:#fffbea;transform:scale(1.05)}
-  .btn.primary{background:var(--marron-light);color:#fffbea;border-color:var(--marron-dark)}
+  .btn{padding:10px 16px;border-radius:8px;border:2px solid var(--frame);background:#d4a373;color:#2d1a0a;font-weight:700;cursor:pointer;box-shadow:2px 2px 4px var(--shadow)}
+  .btn:hover{background:#b97d4e;color:#fff}
+  .btn.primary{background:var(--marron-light);color:#fff;border-color:var(--marron-dark)}
   .btn.primary:hover{background:var(--marron-dark)}
-  input[type=text]{padding:10px 12px;border:2px solid var(--frame);border-radius:10px;min-width:220px;background:#fff;color:#2d1a0a}
-
-  .badge{display:inline-block;padding:.25rem .5rem;border-radius:.5rem;border:2px solid #ccc;font-size:.85rem}
+  input[type=text]{padding:10px 12px;border:2px solid var(--frame);border-radius:10px;min-width:220px}
+  .badge{padding:.25rem .5rem;border-radius:.5rem;border:2px solid #ccc;font-size:.85rem}
   .ok{background:#e9fbe9;border-color:#bfe9bf;color:#164a16}
   .ko{background:#fff0f0;border-color:#f2c1c1;color:#7b1a1a}
-  .mini-badge{font-size:.8rem;padding:.2rem .5rem;border-radius:999px;border:2px solid #c9c9c9}
-  .mini-ok{background:#e9fbe9;border-color:#bfe9bf;color:#164a16}
-  .mini-ko{background:#fff4f4;border-color:#f2c1c1;color:#7b1a1a}
-
-  .map-wrap{position:relative;width:100%;overflow:auto;background:#faf3e0;border:2px solid #a97442;border-radius:12px}
-  .map-frame{width:100%;height:min(80vh,700px);display:flex;align-items:center;justify-content:center}
-  .map-img{max-height:100%;max-width:100%;display:block;border-radius:8px}
-  .map-tools{position:absolute;right:12px;top:12px;display:flex;gap:6px}
-
-  .hr{height:2px;margin:16px 0;background:#7a3e21}
   .enigme{display:none}
-
-  /* Effet parchemin */
-  .parchment{
-    position:relative;
-    background: radial-gradient(ellipse at 30% 20%, #fff6d9 0%, #fff0c9 40%, #f6e4b6 70%, #ecd9a6 100%);
-    border:1px solid #c9a96b;
-    color:#3a240d;
-    padding:18px 16px 16px 16px;
-    border-radius:10px;
-    box-shadow: 0 3px 12px rgba(0,0,0,.25), inset 0 0 40px rgba(125,72,23,.15);
-  }
-  .parchment h3{ margin-top:0; font-family:'Alfa Slab One',serif }
-  .parchment .lead{ font-weight:700; font-style:italic; margin:.3rem 0 .6rem }
-  .parchment .icon{ font-size:1.2rem; margin-right:.35rem }
+  .parchment{background:radial-gradient(ellipse at 30% 20%, #fff6d9 0%, #fff0c9 40%, #f6e4b6 70%, #ecd9a6 100%);border:1px solid #c9a96b;color:#3a240d;padding:16px;border-radius:10px;box-shadow:0 3px 12px rgba(0,0,0,.25), inset 0 0 40px rgba(125,72,23,.15)}
+  .parchment h3{margin-top:0;font-family:'Alfa Slab One',serif}
 </style>
 </head>
 <body>
@@ -62,115 +34,81 @@
   <section class="card" id="acces">
     <h2>Accès au jeu</h2>
     <div class="row">
-      <a class="btn primary" target="_blank" rel="noopener"
-         href="https://www.paypal.com/ncp/payment/GLM2FB7ERYXKQ">💳 Payer 10 € (PayPal)</a>
+      <input type="text" id="playerName" placeholder="Ton pseudo" />
+      <input type="text" id="codeInput" placeholder="Code d’accès" />
+      <button class="btn" id="btnValiderCode">Valider</button>
+      <span id="badge" class="badge ko">verrouillé</span>
     </div>
-    <div class="row">
-      <input type="text" id="payerName" value="INARI" readonly />
-      <input type="text" id="payerTxn" placeholder="N° de paiement PayPal" />
-      <a id="btnEnvoyerSMS" class="btn" href="#">Envoyer la preuve par SMS</a>
-    </div>
-    <div id="smsHint" class="sms-hint" style="display:none;"></div>
-
-    <div class="row">
-      <div class="row" style="gap:.4rem">
-        <input type="text" id="playerName" placeholder="Ton pseudo (obligatoire)" />
-        <span id="badgePseudo" class="mini-badge mini-ko">à renseigner</span>
-      </div>
-      <div class="row" style="gap:.4rem">
-        <input type="text" id="codeInput" placeholder="Entrer le code d’accès reçu" />
-        <span id="badgeCode" class="mini-badge mini-ko">à renseigner</span>
-      </div>
-      <button class="btn" id="btnValiderCode">Valider pseudo + code</button>
-    </div>
-
-    <div class="row hud">
-      <span class="chip">⏱ Temps : <span id="chrono">00:00:00</span></span>
-      <span>Statut : <span id="badge" class="badge ko">verrouillé</span></span>
-    </div>
-    <div class="hr"></div>
-    <div class="row">
-      <button class="btn primary" id="btnCommencer" disabled>Commencer le jeu</button>
-      <button class="btn" id="btnScanner" disabled>Scanner le QR code</button>
-    </div>
-  </section>
-
-  <!-- Carte -->
-  <section class="card">
-    <h2>Carte du parcours</h2>
-    <div class="map-wrap">
-      <div class="map-frame">
-        <img class="map-img" id="mapImg" src="carte-schoelcher.jpg" alt="Carte du jeu de piste à Schœlcher">
-      </div>
-    </div>
+    <button class="btn primary" id="btnCommencer" disabled>Commencer le jeu</button>
+    <button class="btn" id="btnScanner" disabled>Scanner le QR code</button>
   </section>
 
   <!-- Énigmes -->
   <section id="bloc-enigmes" class="card" style="display:none;">
     <h2>Énigmes</h2>
-    <p id="txtVisibility">Seule l’Énigme 1 est visible au départ. Les suivantes s’ouvrent en scannant les bons QR codes.</p>
-
     <article id="enigme1" class="enigme">
       <div class="parchment">
         <h3>🗺️ Énigme 1</h3>
-        <p class="lead"><span class="icon">⚡️</span>La symétrie t'emportera au premier endroit.</p>
+        <p><b>La symétrie t'emportera au premier endroit.</b></p>
         <p>Là où l’électricité est source d’énergie, tu trouveras l’essence de ta quête.</p>
       </div>
     </article>
-
     <article id="enigme2" class="enigme">
       <div class="parchment">
         <h3>🌿 Énigme 2</h3>
-        <p class="lead">Passage Ombragé<br>Nature Taguée</p>
+        <p><b>Passage Ombragé<br>Nature Taguée</b></p>
         <p>Représentent ta prochaine destination.</p>
       </div>
     </article>
-
-    <article id="enigme3" class="enigme"><h3>Énigme 3</h3><p><em>(Ton ÉNIGME 3 ici)</em></p></article>
-    <article id="enigme4" class="enigme"><h3>Énigme 4</h3><p><em>(Ton ÉNIGME 4 ici)</em></p></article>
+    <article id="enigme3" class="enigme"><h3>Énigme 3</h3></article>
+    <article id="enigme4" class="enigme"><h3>Énigme 4</h3></article>
     <article id="fin" class="enigme"><h3>Bravo 🎉</h3><p>Tu as terminé le parcours !</p></article>
   </section>
 
+  <!-- Scanner modal -->
+  <div id="scanModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:16px;border-radius:10px;max-width:400px;width:100%">
+      <h3>Scanner un QR code</h3>
+      <input type="text" id="qrManual" placeholder="Code QR manuel (ex: ENIGME-2)" />
+      <button class="btn" id="btnValiderQR">Valider</button>
+      <button class="btn" id="btnFermerScan">Fermer</button>
+      <p id="scanMsg"></p>
+    </div>
+  </div>
+
 <script>
-  const CONTACT_PHONE = "+596696327693";
-  const ACCESS_CODES  = ["SCHOELCHER-10"];
-  const QR_FLOW = [
-    { nextId:"enigme2", value:"ENIGME-2" },
-    { nextId:"enigme3", value:"ENIGME-3" },
-    { nextId:"enigme4", value:"ENIGME-4" },
-    { nextId:"fin",     value:"FIN" }
+  const ACCESS_CODES=["SCHOELCHER-10"];
+  const QR_FLOW=[
+    {nextId:"enigme2",value:"ENIGME-2"},
+    {nextId:"enigme3",value:"ENIGME-3"},
+    {nextId:"enigme4",value:"ENIGME-4"},
+    {nextId:"fin",value:"FIN"}
   ];
+  const normalize=s=>(s||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[\s_\/\\-]+/g,'').toUpperCase();
+  const badge=document.getElementById("badge"),btnCommencer=document.getElementById("btnCommencer"),btnScanner=document.getElementById("btnScanner"),blocEnigmes=document.getElementById("bloc-enigmes");
+  const btnValiderCode=document.getElementById("btnValiderCode"),codeInput=document.getElementById("codeInput"),playerNameInput=document.getElementById("playerName");
 
-  const $ = s => document.querySelector(s);
-  const badge=$("#badge"), btnCommencer=$("#btnCommencer"), btnScanner=$("#btnScanner");
-  const blocEnigmes=$("#bloc-enigmes"), codeInput=$("#codeInput"), btnValiderCode=$("#btnValiderCode");
-  const playerNameInput=$("#playerName");
-
-  function normalize(s){return (s||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[\s_\/\\-]+/g,'').toUpperCase();}
-  const ACCESS_SET = new Set(ACCESS_CODES.map(normalize));
-
-  btnValiderCode.addEventListener("click", ()=>{
-    const pseudo = (playerNameInput.value||"").trim();
-    const entered = normalize(codeInput.value);
-    if(!pseudo||!entered||!ACCESS_SET.has(entered)){alert("Code ou pseudo invalide");return;}
-    badge.textContent="déverrouillé"; badge.classList.remove("ko"); badge.classList.add("ok");
-    btnCommencer.disabled=false;
+  btnValiderCode.addEventListener("click",()=>{
+    const code=normalize(codeInput.value);
+    if(!playerNameInput.value.trim()||!ACCESS_CODES.map(normalize).includes(code)){alert("Pseudo ou code invalide");return;}
+    badge.textContent="déverrouillé";badge.className="badge ok";btnCommencer.disabled=false;
   });
 
-  btnCommencer.addEventListener("click", ()=>{
+  btnCommencer.addEventListener("click",()=>{
     blocEnigmes.style.display="block";
     document.getElementById("enigme1").style.display="block";
     btnScanner.disabled=false;
   });
 
-  // QR handling (simulation: saisie manuelle ou scan)
-  function unlock(id){document.getElementById(id).style.display="block";}
-  function handleQR(value){
-    const item = QR_FLOW.find(x=>x.value===value);
-    if(item) unlock(item.nextId);
-  }
-  // Pour test rapide sans caméra :
-  window.testQR = handleQR;
+  // Gestion QR
+  const scanModal=document.getElementById("scanModal"),btnValiderQR=document.getElementById("btnValiderQR"),btnFermerScan=document.getElementById("btnFermerScan"),qrManual=document.getElementById("qrManual"),scanMsg=document.getElementById("scanMsg");
+  btnScanner.addEventListener("click",()=>{scanModal.style.display="flex";scanMsg.textContent="";qrManual.value="";});
+  btnFermerScan.addEventListener("click",()=>scanModal.style.display="none");
+  btnValiderQR.addEventListener("click",()=>{
+    const v=(qrManual.value||"").trim();
+    const item=QR_FLOW.find(x=>x.value===v);
+    if(item){document.getElementById(item.nextId).style.display="block";scanMsg.textContent="✅ Débloqué";}else{scanMsg.textContent="❌ Code invalide";}
+  });
 </script>
 </body>
 </html>
