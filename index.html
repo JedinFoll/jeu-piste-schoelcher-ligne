@@ -65,6 +65,7 @@
     <div class="row">
       <input type="text" id="payerName" value="INARI" readonly />
       <input type="text" id="payerTxn" placeholder="N° de paiement PayPal" />
+      <!-- Lien SMS (href construit au clic) -->
       <a id="btnEnvoyerSMS" class="btn" href="#">Envoyer la preuve par SMS</a>
       <button id="btnCopierSMS" class="btn" type="button">Copier le message</button>
     </div>
@@ -140,37 +141,147 @@
   const playerNameInput = document.getElementById("playerName");
   const chronoEl     = document.getElementById("chrono");
 
-  // Chrono
+  // ===== Chrono
   let startTime=null, timerInterval=null;
-  function formatTime(sec){const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=Math.floor(sec%60);const pad=x=>String(x).padStart(2,"0");return `${pad(h)}:${pad(m)}:${pad(s)}`;}
-  function tick(){chronoEl.textContent=formatTime(Math.floor((Date.now()-startTime)/1000));}
-  function startChrono(){if(timerInterval)clearInterval(timerInterval);startTime=Date.now();localStorage.setItem(LS_RUN,JSON.stringify({t0:startTime,player:playerNameInput.value.trim()}));timerInterval=setInterval(tick,1000);tick();}
-  function stopChronoAndRecord(){if(!startTime)return;const elapsed=Math.floor((Date.now()-startTime)/1000);clearInterval(timerInterval);timerInterval=null;chronoEl.textContent=formatTime(elapsed);const player=playerNameInput.value.trim();let board={};try{board=JSON.parse(localStorage.getItem(LS_BOARD)||"{}");}catch(_){}
-    if(!(player in board)||elapsed<board[player])board[player]=elapsed;
-    localStorage.setItem(LS_BOARD,JSON.stringify(board));localStorage.removeItem(LS_RUN);renderBoard();}
+  const pad = x => String(x).padStart(2,"0");
+  const fmt = sec => `${pad(Math.floor(sec/3600))}:${pad(Math.floor((sec%3600)/60))}:${pad(Math.floor(sec%60))}`;
+  function tick(){chronoEl.textContent=fmt(Math.floor((Date.now()-startTime)/1000));}
+  function startChrono(){
+    if(timerInterval)clearInterval(timerInterval);
+    startTime=Date.now();
+    localStorage.setItem(LS_RUN,JSON.stringify({t0:startTime,player:playerNameInput.value.trim()}));
+    timerInterval=setInterval(tick,1000); tick();
+  }
+  function stopChronoAndRecord(){
+    if(!startTime)return;
+    const elapsed=Math.floor((Date.now()-startTime)/1000);
+    clearInterval(timerInterval); timerInterval=null;
+    chronoEl.textContent=fmt(elapsed);
+    const player=playerNameInput.value.trim();
+    let board={}; try{board=JSON.parse(localStorage.getItem(LS_BOARD)||"{}");}catch(_){}
+    if(!(player in board)||elapsed<board[player]) board[player]=elapsed;
+    localStorage.setItem(LS_BOARD,JSON.stringify(board));
+    localStorage.removeItem(LS_RUN);
+    renderBoard();
+  }
 
-  // Classement
-  function renderBoard(){const tbody=document.querySelector("#boardTable tbody");tbody.innerHTML="";let board={};try{board=JSON.parse(localStorage.getItem(LS_BOARD)||"{}");}catch(_){}
+  // ===== Classement
+  function renderBoard(){
+    const tbody=document.querySelector("#boardTable tbody");
+    tbody.innerHTML="";
+    let board={}; try{board=JSON.parse(localStorage.getItem(LS_BOARD)||"{}");}catch(_){}
     const sorted=Object.entries(board).sort((a,b)=>a[1]-b[1]).slice(0,5);
     if(!sorted.length){tbody.innerHTML="<tr><td colspan='3'>Aucun joueur</td></tr>";return;}
-    sorted.forEach(([name,sec],i)=>{const tr=document.createElement("tr");tr.innerHTML=`<td>${i+1}</td><td>${name}</td><td>${formatTime(sec)}</td>`;tbody.appendChild(tr);});}
+    sorted.forEach(([name,sec],i)=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${i+1}</td><td>${name}</td><td>${fmt(sec)}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
   renderBoard();
 
-  // Accès
-  function setAccess(ok){if(ok){localStorage.setItem(LS_KEY,"1");badge.textContent="déverrouillé";badge.classList.remove("ko");badge.classList.add("ok");updateStartButton();}else{localStorage.removeItem(LS_KEY);badge.textContent="verrouillé";badge.classList.remove("ok");badge.classList.add("ko");btnCommencer.disabled=true;btnScanner.disabled=true;blocEnigmes.style.display="none";}}
+  // ===== Accès
+  function setAccess(ok){
+    if(ok){
+      localStorage.setItem(LS_KEY,"1");
+      badge.textContent="déverrouillé";
+      badge.classList.remove("ko"); badge.classList.add("ok");
+      updateStartButton();
+    }else{
+      localStorage.removeItem(LS_KEY);
+      badge.textContent="verrouillé";
+      badge.classList.remove("ok"); badge.classList.add("ko");
+      btnCommencer.disabled=true; btnScanner.disabled=true; blocEnigmes.style.display="none";
+    }
+  }
   setAccess(localStorage.getItem(LS_KEY)==="1");
 
-  function updateStartButton(){btnCommencer.disabled=!(localStorage.getItem(LS_KEY)==="1" && playerNameInput.value.trim());}
+  function updateStartButton(){
+    btnCommencer.disabled = !(localStorage.getItem(LS_KEY)==="1" && playerNameInput.value.trim());
+  }
   playerNameInput.addEventListener("input", updateStartButton);
 
-  // Code d'accès
-  btnValiderCode.addEventListener("click",()=>{if(codeInput.value.trim()===ACCESS_CODE){setAccess(true);alert("Code valide ✅");}else alert("Code invalide ❌");});
+  // ===== Code d’accès
+  btnValiderCode.addEventListener("click",()=>{
+    if(codeInput.value.trim()===ACCESS_CODE){ setAccess(true); alert("Code valide ✅"); }
+    else alert("Code invalide ❌");
+  });
 
-  // Commencer
-  btnCommencer.addEventListener("click",()=>{if(btnCommencer.disabled)return;blocEnigmes.style.display="block";document.getElementById("enigme1").style.display="block";btnScanner.disabled=false;if(!startTime)startChrono();});
+  // ===== Commencer
+  btnCommencer.addEventListener("click",()=>{
+    if(btnCommencer.disabled) return;
+    blocEnigmes.style.display="block";
+    document.getElementById("enigme1").style.display="block";
+    btnScanner.disabled=false;
+    if(!startTime) startChrono();
+  });
 
-  // Fin -> arrêt chrono
-  document.getElementById("fin").addEventListener("click",stopChronoAndRecord);
+  // ======== SMS : force "INARI" et compat iOS/Android =========
+  const btnEnvoyerSMS = document.getElementById("btnEnvoyerSMS");
+  const btnCopierSMS  = document.getElementById("btnCopierSMS");
+  const payerTxn      = document.getElementById("payerTxn");
+  const smsHint       = document.getElementById("smsHint");
+  const isIOS         = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isAndroid     = /Android/i.test(navigator.userAgent);
+
+  // Compose exactement: INARI en tout début de message
+  function buildSmsMessage(){
+    const txn = (payerTxn.value||"").trim();
+    if(!txn){ alert("Entre ton N° de paiement PayPal."); return null; }
+    // Pas de saut de ligne au début (certains OS suppriment), on garde INARI en premier mot.
+    return `INARI - Paiement: ${txn}`;
+  }
+
+  function smsHrefBestEffort(phone, text){
+    const num  = phone.replace(/\s+/g,''); // conserve le +
+    const body = encodeURIComponent(text); // encode le message
+    // iOS est le plus strict: sms:+num&body=...
+    if (isIOS)     return `sms:${num}&body=${body}`;
+    // Android moderne
+    if (isAndroid) return `smsto:${num}?body=${body}`;
+    // Fallback générique
+    return `sms:${num}?body=${body}`;
+  }
+
+  btnEnvoyerSMS.addEventListener("click",(e)=>{
+    const msg = buildSmsMessage();
+    if(!msg){ e.preventDefault(); return; }
+    const href = smsHrefBestEffort(CONTACT_PHONE, msg);
+    // place l'URL juste avant de laisser le navigateur gérer le lien
+    btnEnvoyerSMS.setAttribute("href", href);
+    // Après 1.2s, si on est toujours sur la page, on affiche un plan B
+    setTimeout(async ()=>{
+      if (document.visibilityState === "visible"){
+        try{ await navigator.clipboard.writeText(msg); }catch(_){}
+        smsHint.style.display="block";
+        smsHint.innerHTML = `
+          Si l’envoi SMS ne s’est pas ouvert, ouvre cette page dans <strong>Safari</strong> (iPhone) ou <strong>Chrome</strong> (Android),
+          puis envoie un SMS au <strong>${CONTACT_PHONE}</strong> avec :<br>
+          <pre style="white-space:pre-wrap;margin:.5rem 0 0;">${msg}</pre>
+          Astuce : le message commence bien par <strong>INARI</strong>.
+        `;
+      }
+    }, 1200);
+  });
+
+  btnCopierSMS.addEventListener("click", async ()=>{
+    const msg = buildSmsMessage(); if(!msg) return;
+    try{ await navigator.clipboard.writeText(msg); alert("✅ Message copié. Ouvre ton appli SMS et colle-le (commence par INARI)."); }
+    catch(_){ alert("Copie automatique impossible. Sélectionne et copie le texte affiché ci-dessous."); smsHint.style.display="block"; smsHint.textContent = msg; }
+  });
+
+  // ===== Optionnel: restauration chrono si refresh
+  (function restoreRun(){
+    try{
+      const run = JSON.parse(localStorage.getItem(LS_RUN)||"null");
+      if(run && run.t0){
+        playerNameInput.value = run.player || "";
+        updateStartButton();
+        startTime = run.t0;
+        timerInterval = setInterval(tick,1000); tick();
+      }
+    }catch(_){}
+  })();
 </script>
 </body>
 </html>
