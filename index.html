@@ -122,11 +122,10 @@
     <h2>Énigmes</h2>
     <p id="txtVisibility">Seule l’Énigme 1 est visible au départ. Pour débloquer les suivantes, scanne les bons QR codes dans l’ordre.</p>
 
-    <!-- ÉNIGME 1 : ton PDF intégré en parchemin -->
+    <!-- ÉNIGME 1 : PDF intégré -->
     <article id="enigme1" class="enigme">
       <div class="parchment">
         <h3>🗺️ Énigme 1</h3>
-        <!-- Mets ton fichier ici : assets/enigmes/enigme1.pdf -->
         <object data="assets/enigmes/enigme1.pdf#view=FitH" type="application/pdf" width="100%" height="520">
           <p>Impossible d’afficher le PDF. <a href="assets/enigmes/enigme1.pdf" target="_blank" rel="noopener">Ouvrir l’Énigme 1</a></p>
         </object>
@@ -199,14 +198,18 @@
 <script>
   /* =================== CONFIG =================== */
   const CONTACT_PHONE = "+596696327693";
-  const ACCESS_CODES = ["SCHOELCHER-10"];
+  const ACCESS_CODES  = ["SCHOELCHER-10"];
+
+  // Compat : si un QR ne contient PAS ENIGME-2/3/4/FIN, mais qu’on scanne depuis le bouton d’une étape,
+  // on accepte ce QR pour cette étape. Mets false pour désactiver cette tolérance.
+  const ALLOW_FALLBACK = true;
 
   /* ====== STORAGE KEYS ====== */
-  const KEY_ACCESS="jp_access";          // "1" si accès valide
+  const KEY_ACCESS="jp_access";
   const KEY_PSEUDO="jp_player";
-  const KEY_STARTED="jp_started";        // "1" si bouton Commencer cliqué
-  const KEY_UNLOCKED="jp_unlocked";      // JSON: ["enigme1","enigme2",...]
-  const KEY_START_TIME="jp_start_time";  // timestamp ms pour chrono
+  const KEY_STARTED="jp_started";
+  const KEY_UNLOCKED="jp_unlocked";
+  const KEY_START_TIME="jp_start_time";
 
   /* ====== DOM ====== */
   const $=s=>document.querySelector(s);
@@ -248,8 +251,7 @@
   function unlock(id){
     const arr=getUnlocked();
     if(!arr.includes(id)) arr.push(id);
-    setUnlocked(arr);
-    renderProgress();
+    setUnlocked(arr); renderProgress();
   }
   function renderProgress(){
     const arr=getUnlocked();
@@ -284,26 +286,28 @@
     if(btnCommencer.disabled) return;
     localStorage.setItem(KEY_STARTED,"1");
     const arr=getUnlocked(); if(!arr.includes("enigme1")) arr.push("enigme1"); setUnlocked(arr);
-    renderProgress();
-    startChrono();
+    renderProgress(); startChrono();
   });
 
-  /* ====== EXTRACTION CODE À PARTIR DE N’IMPORTE QUOI (URL/TEXTE) ====== */
+  /* ====== EXTRACTION CODE QR (URL ou texte) ====== */
   function extractQR(raw){
     const s = String(raw||"").trim();
-    // URL avec ?qr=CODE
+    // URL avec ?qr=
     try{
       const u = new URL(s);
       const q = u.searchParams.get("qr");
       if(q) return q.toUpperCase();
-    }catch(e){ /* pas une URL */ }
-    // Cherche ENIGME-2/3/4 ou FIN dans n'importe quel texte
-    const m = s.toUpperCase().match(/\b(ENIGME-[234]|FIN)\b/);
-    if(m) return m[1];
+    }catch(e){}
+    // Mots-clés
+    const up = s.toUpperCase();
+    if (/\bENIGME-2\b/.test(up)) return "ENIGME-2";
+    if (/\bENIGME-3\b/.test(up)) return "ENIGME-3";
+    if (/\bENIGME-4\b/.test(up)) return "ENIGME-4";
+    if (/\bFIN\b/.test(up))      return "FIN";
     return null;
   }
 
-  /* ====== SCANNER PAR ÉNIGME ====== */
+  /* ====== SCAN PAR ÉNIGME ====== */
   let stream=null, detector=null, rafId=null, expectedNow=null;
   window.scanNext = (btn)=>{
     if(!hasAccess()){ alert("Accès requis. Merci de valider votre paiement."); return; }
@@ -331,9 +335,13 @@
       const codes=await detector.detect(video);
       if(codes && codes.length){
         const raw=(codes[0].rawValue||"").trim();
-        const code = extractQR(raw);
+        let code = extractQR(raw);
+        // Compatibilité : si rien reconnu mais on sait ce qui est attendu, on accepte ce QR pour débloquer l’étape
+        if(!code && ALLOW_FALLBACK && expectedNow && raw){
+          code = expectedNow;
+        }
         if(code){ progressFromQR(code); closeScan(); return; }
-        else { scanMsg.textContent = "QR non reconnu (attendu : ENIGME-2/3/4 ou FIN)."; }
+        else { scanMsg.textContent = "QR non reconnu."; }
       }
     }catch(_){}
     rafId=requestAnimationFrame(tickScan);
@@ -370,7 +378,7 @@
   (function gateFromURL(){
     const params=new URLSearchParams(location.search);
     const q=params.get("qr");
-    if(q) history.replaceState({}, "", location.pathname); // nettoie l'URL
+    if(q) history.replaceState({}, "", location.pathname);
     if(!q) return;
 
     if(!hasAccess()){
@@ -381,7 +389,7 @@
       localStorage.setItem(KEY_STARTED,"1");
       const arr=getUnlocked(); if(!arr.includes("enigme1")){ arr.push("enigme1"); setUnlocked(arr); }
     }
-    const code = extractQR(q);
+    const code = extractQR(q) || (ALLOW_FALLBACK ? q.toUpperCase() : null);
     if(code){ progressFromQR(code); renderProgress(); }
     else { alert("QR non reconnu via l’URL."); }
   })();
