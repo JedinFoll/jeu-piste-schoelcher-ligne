@@ -51,11 +51,7 @@
   .sms-hint{background:#fff4d6;border:2px dashed #c28b2c;border-radius:10px;padding:10px;margin-top:6px;color:#2d1a0a}
 
   /* Mise en évidence du bouton Commencer après validation */
-  @keyframes pulse {
-    0%{transform:scale(1); box-shadow:0 0 0 rgba(0,0,0,0)}
-    50%{transform:scale(1.05); box-shadow:0 0 0 10px rgba(255,255,255,.15)}
-    100%{transform:scale(1)}
-  }
+  @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
   .pulse { animation:pulse 1s ease-in-out 3; }
   #hintStart { color:#2d1a0a; background:#fff4d6; border:2px dashed #c28b2c; border-radius:8px; padding:6px 10px; display:none; }
 </style>
@@ -84,7 +80,7 @@
     </div>
     <div id="smsHint" class="sms-hint" style="display:none;"></div>
 
-    <!-- Pseudo + Code + Valider -->
+    <!-- Pseudo + Code + Valider (bouton après les deux champs) -->
     <div class="row">
       <div class="row" style="gap:.4rem">
         <input type="text" id="playerName" placeholder="Ton pseudo (obligatoire)" />
@@ -141,75 +137,4 @@
     <div id="scanBox">
       <h3 style="font-family:'Alfa Slab One',serif;">Scanner un QR code</h3>
       <p class="muted">Autorise la caméra. Sinon, saisis le code manuellement.</p>
-      <video id="video" playsinline muted></video>
-      <div class="row">
-        <input type="text" id="qrManual" placeholder="Code QR manuel (ex: ENIGME-2)" />
-        <button class="btn" id="btnValiderQR" type="button">Valider</button>
-        <button class="btn" id="btnFermerScan" type="button">Fermer</button>
-      </div>
-      <p id="scanMsg" class="muted"></p>
-    </div>
-  </div>
-
-  <!-- Classement -->
-  <section class="card" id="classement">
-    <h2>Classement – Top 5</h2>
-    <table id="boardTable">
-      <thead><tr><th>#</th><th>Pseudo</th><th>Temps</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </section>
-
-<script>
-  /* =================== CONFIG =================== */
-  const CONTACT_PHONE = "+596696327693";
-  const ACCESS_CODES  = ["SCHOELCHER-10"]; // ajoute d’autres codes si besoin
-  const PLAYER_KEY    = "jp_player_name";
-  const BOARD_KEY     = "jp_board";
-  const QR_FLOW = [
-    { nextId:"enigme2", value:"ENIGME-2" },
-    { nextId:"enigme3", value:"ENIGME-3" },
-    { nextId:"enigme4", value:"ENIGME-4" },
-    { nextId:"fin",     value:"FIN" }
-  ];
-  /* ============================================= */
-
-  // Helpers DOM
-  const $ = s => document.querySelector(s);
-  const badge=$("#badge"), btnCommencer=$("#btnCommencer"), btnScanner=$("#btnScanner");
-  const blocEnigmes=$("#bloc-enigmes"), codeInput=$("#codeInput"), btnValiderCode=$("#btnValiderCode");
-  const playerNameInput=$("#playerName"), chronoEl=$("#chrono");
-  const payerTxn=$("#payerTxn"), btnEnvoyerSMS=$("#btnEnvoyerSMS"), smsHint=$("#smsHint");
-  const badgePseudo=$("#badgePseudo"), badgeCode=$("#badgeCode");
-  const hintStart=$("#hintStart");
-
-  // Normaliser code : retire espaces, underscores, et TOUS les tirets Unicode (\p{Pd}), enlève accents, uppercase
-  function normalize(s){
-    return (s||"")
-      .normalize('NFD').replace(/\p{Diacritic}/gu,'')
-      .replace(/[\s_\p{Pd}]+/gu,'')
-      .toUpperCase();
-  }
-  const ACCESS_SET = new Set(ACCESS_CODES.map(normalize));
-
-  // Accès (badge global)
-  function setAccess(ok){
-    if(ok){
-      badge.textContent="déverrouillé";
-      badge.classList.remove("ko"); badge.classList.add("ok");
-      updateStartButton();
-    }else{
-      badge.textContent="verrouillé";
-      badge.classList.remove("ok"); badge.classList.add("ko");
-      btnCommencer.disabled=true; btnScanner.disabled=true; blocEnigmes.style.display="none";
-    }
-  }
-  setAccess(false);
-
-  // Chrono
-  let startTime=null, timerInterval=null;
-  const pad=x=>String(x).padStart(2,"0");
-  const fmt=sec=>`${pad(Math.floor(sec/3600))}:${pad(Math.floor((sec%3600)/60))}:${pad(Math.floor(sec%60))}`;
-  function tick(){ chronoEl.textContent=fmt(Math.floor((Date.now()-startTime)/1000)); }
-  function startChrono(){ if(timerInterval)clearInterval(timerInterval); startTime=Date.now(); timerInterval=setInterval(tick,1000); tick(); }
-  function stopChrono(){ if(!startTime)return; clearInte
+      <vid
