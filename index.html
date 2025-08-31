@@ -122,20 +122,31 @@
     <h2>Énigmes</h2>
     <p id="txtVisibility">Seule l’Énigme 1 est visible au départ. Pour débloquer les suivantes, scanne les bons QR codes dans l’ordre.</p>
 
-    <!-- ÉNIGME 1 : DOCX intégré -->
-    <article id="enigme1" class="enigme">
-      <div class="parchment">
-        <h3>🗺️ Énigme 1</h3>
-        <div id="enigme1Doc" style="aspect-ratio: 16/9; width:100%; max-height: 520px;">
-          <iframe id="docxFrame" title="Énigme 1"
-                  style="width:100%; height:100%; border:0; border-radius:10px;"
-                  loading="lazy" referrerpolicy="no-referrer"></iframe>
-        </div>
-        <p style="margin-top:.5rem;">
-          Si le document ne s’affiche pas, <a id="docxDirectLink" href="enigme1.docx" target="_blank" rel="noopener">ouvre l’Énigme 1 (DOCX)</a>.
-        </p>
-      </div>
-      <div class="row scan-row">
+   <article id="enigme1" class="enigme">
+  <div class="parchment">
+    <h3>🗺️ Énigme 1</h3>
+
+    <!-- PDF intégré -->
+    <object
+      data="enigme1.pdf#view=FitH"
+      type="application/pdf"
+      width="100%"
+      height="520"
+      style="border:0; border-radius:10px;">
+      <p>
+        Impossible d’afficher le PDF dans le navigateur.
+        <a href="enigme1.pdf" target="_blank" rel="noopener">Ouvrir l’Énigme 1 (PDF)</a>.
+      </p>
+    </object>
+  </div>
+
+  <div class="row scan-row">
+    <button class="btn" data-expects="ENIGME-2" onclick="scanNext(this)">
+      Scanner le QR pour l’Énigme 2
+    </button>
+  </div>
+</article>
+
         <button class="btn" data-expects="ENIGME-2" onclick="scanNext(this)">Scanner le QR pour l’Énigme 2</button>
       </div>
     </article>
