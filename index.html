@@ -50,7 +50,7 @@
   th{background:#f7ead0}
   .sms-hint{background:#fff4d6;border:2px dashed #c28b2c;border-radius:10px;padding:10px;margin-top:6px;color:#2d1a0a}
 
-  /* Mise en évidence du bouton Commencer après validation */
+  /* Mise en évidence du bouton Commencer si besoin */
   @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
   .pulse { animation:pulse 1s ease-in-out 3; }
   #hintStart { color:#2d1a0a; background:#fff4d6; border:2px dashed #c28b2c; border-radius:8px; padding:6px 10px; display:none; }
@@ -80,7 +80,7 @@
     </div>
     <div id="smsHint" class="sms-hint" style="display:none;"></div>
 
-    <!-- Pseudo + Code + Valider -->
+    <!-- Pseudo + Code + Valider (bouton après les deux champs) -->
     <div class="row">
       <div class="row" style="gap:.4rem">
         <input type="text" id="playerName" placeholder="Ton pseudo (obligatoire)" />
@@ -159,8 +159,211 @@
 <script>
   /* =================== CONFIG =================== */
   const CONTACT_PHONE = "+596696327693";
-  const ACCESS_CODES  = ["SCHOELCHER-10"]; // ajoute d’autres codes si besoin
+  const ACCESS_CODES  = ["SCHOELCHER-10"]; // codes valides
   const PLAYER_KEY    = "jp_player_name";
   const BOARD_KEY     = "jp_board";
   const QR_FLOW = [
-    { nextId:"enigme2", value
+    { nextId:"enigme2", value:"ENIGME-2" },
+    { nextId:"enigme3", value:"ENIGME-3" },
+    { nextId:"enigme4", value:"ENIGME-4" },
+    { nextId:"fin",     value:"FIN" }
+  ];
+  /* ============================================= */
+
+  // Helpers DOM
+  const $ = s => document.querySelector(s);
+  const badge=$("#badge"), btnCommencer=$("#btnCommencer"), btnScanner=$("#btnScanner");
+  const blocEnigmes=$("#bloc-enigmes"), codeInput=$("#codeInput"), btnValiderCode=$("#btnValiderCode");
+  const playerNameInput=$("#playerName"), chronoEl=$("#chrono");
+  const payerTxn=$("#payerTxn"), btnEnvoyerSMS=$("#btnEnvoyerSMS"), smsHint=$("#smsHint");
+  const badgePseudo=$("#badgePseudo"), badgeCode=$("#badgeCode");
+  const hintStart=$("#hintStart");
+
+  // Normaliser le code : NFD pour accents, on retire espaces/underscores/slashs \ /, et TOUS les principaux tirets
+  function normalize(s){
+    return (s||"")
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')    // diacritiques
+      .replace(/[\s_\/\\]+/g,'')                         // espaces, _, /, \
+      .replace(/[-–—﹘﹣－]+/g,'')                        // différents tirets
+      .toUpperCase();
+  }
+  const ACCESS_SET = new Set(ACCESS_CODES.map(normalize));
+
+  // Accès (badge global)
+  function setAccess(ok){
+    if(ok){
+      badge.textContent="déverrouillé";
+      badge.classList.remove("ko"); badge.classList.add("ok");
+      updateStartButton();
+    }else{
+      badge.textContent="verrouillé";
+      badge.classList.remove("ok"); badge.classList.add("ko");
+      btnCommencer.disabled=true; btnScanner.disabled=true; blocEnigmes.style.display="none";
+    }
+  }
+  setAccess(false);
+
+  // Chrono
+  let startTime=null, timerInterval=null;
+  const pad=x=>String(x).padStart(2,"0");
+  const fmt=sec=>`${pad(Math.floor(sec/3600))}:${pad(Math.floor((sec%3600)/60))}:${pad(Math.floor(sec%60))}`;
+  function tick(){ chronoEl.textContent=fmt(Math.floor((Date.now()-startTime)/1000)); }
+  function startChrono(){ if(timerInterval)clearInterval(timerInterval); startTime=Date.now(); timerInterval=setInterval(tick,1000); tick(); }
+  function stopChrono(){ if(!startTime)return; clearInterval(timerInterval); timerInterval=null; }
+
+  // Classement local Top 5
+  function renderBoard(){
+    const tbody = document.querySelector("#boardTable tbody"); tbody.innerHTML="";
+    let board={}; try{ board = JSON.parse(localStorage.getItem(BOARD_KEY)||"{}"); }catch(_){}
+    const sorted = Object.entries(board).sort((a,b)=>a[1]-b[1]).slice(0,5);
+    if(!sorted.length){ tbody.innerHTML="<tr><td colspan='3'>Aucun joueur</td></tr>"; return; }
+    sorted.forEach(([name,sec],i)=>{
+      const tr=document.createElement("tr"); tr.innerHTML=`<td>${i+1}</td><td>${name}</td><td>${fmt(sec)}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  renderBoard();
+
+  function saveScore(){
+    if(!startTime) return;
+    const elapsed = Math.floor((Date.now()-startTime)/1000);
+    stopChrono();
+    const name = (playerNameInput.value||"").trim();
+    if(!name) return;
+    let board={}; try{ board = JSON.parse(localStorage.getItem(BOARD_KEY)||"{}"); }catch(_){}
+    if(!(name in board) || elapsed < board[name]) board[name] = elapsed;
+    localStorage.setItem(BOARD_KEY, JSON.stringify(board));
+    renderBoard();
+  }
+
+  function updateStartButton(){
+    const hasPseudo = !!(playerNameInput.value||"").trim();
+    btnCommencer.disabled = !hasPseudo || badge.classList.contains("ko");
+  }
+  playerNameInput.addEventListener("input", updateStartButton);
+
+  // Restaurer pseudo si déjà connu
+  const savedPlayer = localStorage.getItem(PLAYER_KEY);
+  if(savedPlayer){ playerNameInput.value = savedPlayer; }
+
+  // === Valider PSEUDO + CODE (et AFFICHER ÉNIGME 1 automatiquement) ===
+  btnValiderCode.addEventListener("click", ()=>{
+    const pseudo = (playerNameInput.value||"").trim();
+    const entered = normalize(codeInput.value);
+    if(!pseudo){
+      alert("Entre d’abord ton pseudo.");
+      badgePseudo.textContent="à renseigner"; badgePseudo.className="mini-badge mini-ko";
+      return;
+    }
+    if(!entered){
+      alert("Entre le code d’accès.");
+      badgeCode.textContent="à renseigner"; badgeCode.className="mini-badge mini-ko";
+      return;
+    }
+    if(!ACCESS_SET.has(entered)){
+      alert("Code invalide ❌");
+      badgeCode.textContent="invalide"; badgeCode.className="mini-badge mini-ko";
+      return;
+    }
+    // OK : on valide les deux
+    localStorage.setItem(PLAYER_KEY, pseudo);
+    setAccess(true);
+    // Badges “Validé”
+    badgePseudo.textContent="✅ Validé"; badgePseudo.className="mini-badge mini-ok";
+    badgeCode.textContent="✅ Validé";   badgeCode.className="mini-badge mini-ok";
+    // Verrouille les champs + bouton
+    playerNameInput.readOnly = true;
+    codeInput.readOnly = true;
+    btnValiderCode.disabled = true;
+
+    // 👉 Affiche immédiatement l’Énigme 1 (sans appuyer sur Commencer)
+    document.getElementById("bloc-enigmes").style.display="block";
+    showOnly("enigme1");
+    btnScanner.disabled = false;
+
+    alert("✅ Pseudo et code validés. L’Énigme 1 est affichée.");
+  });
+
+  // Commencer (garde la possibilité d’appuyer si tu préfères, mais ici Énigme 1 est déjà visible)
+  btnCommencer.addEventListener("click", ()=>{
+    if(btnCommencer.disabled) return;
+    document.getElementById("bloc-enigmes").style.display="block";
+    showOnly("enigme1");
+    btnScanner.disabled = false;
+    if(!startTime) startChrono();
+  });
+
+  // Scanner & progression
+  const scanModal=document.getElementById("scanModal"), video=document.getElementById("video"),
+        qrManual=document.getElementById("qrManual"), scanMsg=document.getElementById("scanMsg");
+  const btnValiderQR=document.getElementById("btnValiderQR"), btnFermerScan=document.getElementById("btnFermerScan");
+  let stream, detector;
+
+  btnScanner.addEventListener("click", openScan);
+  btnFermerScan.addEventListener("click", closeScan);
+  btnValiderQR.addEventListener("click", ()=>{ const v=(qrManual.value||"").trim(); if(!v){scanMsg.textContent="Entre un code.";return;} handleQR(v); });
+
+  async function openScan(){
+    scanMsg.textContent = "";
+    scanModal.style.display = "flex";
+    try{
+      if('BarcodeDetector' in window) detector = new BarcodeDetector({formats:['qr_code']});
+      stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+      video.srcObject = stream; await video.play();
+      if(detector) requestAnimationFrame(tickScan);
+    }catch(e){ scanMsg.textContent="Caméra indisponible. Utilise la saisie manuelle."; }
+  }
+  async function tickScan(){
+    try{
+      const codes = await detector.detect(video);
+      if(codes.length){ handleQR((codes[0].rawValue||"").trim()); return; }
+    }catch(_){}
+    if(scanModal.style.display==="flex") requestAnimationFrame(tickScan);
+  }
+  function closeScan(){ scanModal.style.display="none"; if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;} }
+
+  function handleQR(value){
+    const order=["enigme2","enigme3","enigme4","fin"];
+    const next = order.find(step => !document.getElementById(step).dataset.unlocked);
+    const item = QR_FLOW.find(x=>x.nextId===next);
+    if(!item){ scanMsg.textContent="Tout est déjà débloqué ✅"; closeScan(); return; }
+    if(value===item.value){
+      unlock(next); closeScan(); alert("QR validé ✅");
+    }else{
+      scanMsg.textContent="QR incorrect ❌";
+    }
+  }
+  function unlock(id){
+    showOnly(id);
+    document.getElementById(id).dataset.unlocked="1";
+    if(id==="fin") saveScore();
+  }
+  function showOnly(id){
+    const order=["enigme1","enigme2","enigme3","enigme4","fin"];
+    const idx=order.indexOf(id);
+    document.querySelectorAll(".enigme").forEach(e=>e.style.display="none");
+    for(let i=0;i<=idx;i++){ const el=document.getElementById(order[i]); if(el) el.style.display="block"; }
+  }
+
+  // SMS (INARI + compat iOS/Android + plan B)
+  const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isAndroid=/Android/i.test(navigator.userAgent);
+  function buildSmsMessage(){
+    const txn=(payerTxn.value||"").trim();
+    if(!txn){ alert("Entre ton N° de paiement PayPal."); return null; }
+    return `INARI - Paiement: ${txn}`;
+  }
+  function smsHref(phone,text){
+    const num=phone.replace(/\s+/g,''); const body=encodeURIComponent(text);
+    if(isIOS) return `sms:${num}&body=${body}`;
+    if(isAndroid) return `smsto:${num}?body=${body}`;
+    return `sms:${num}?body=${body}`;
+  }
+  btnEnvoyerSMS.addEventListener("click",(e)=>{
+    const msg=buildSmsMessage(); if(!msg){e.preventDefault();return;}
+    btnEnvoyerSMS.setAttribute("href", smsHref(CONTACT_PHONE,msg));
+    setTimeout(()=>{ if(document.visibilityState==="visible"){ smsHint.style.display="block"; smsHint.innerHTML=`Si l’app SMS ne s’est pas ouverte, envoie un SMS au <strong>${CONTACT_PHONE}</strong> avec :<br><pre>${msg}</pre>`; } },1200);
+  });
+</script>
+</body>
+</html>
