@@ -37,19 +37,6 @@
   .hr{height:2px;margin:16px 0;background:#7a3e21}
   .enigme{display:none}
 
-  /* Modal scan */
-  #scanModal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
-  #scanBox{background:#fffef6;border-radius:12px;max-width:520px;width:100%;padding:16px;border:2px solid #a97442;box-shadow:4px 4px 10px var(--shadow)}
-  video{width:100%;border-radius:10px;border:2px solid #a97442;background:#000}
-
-  .hud{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .chip{background:#fff0cc;border:2px solid #e2b24c;border-radius:999px;padding:6px 12px;font-weight:700}
-
-  table{width:100%;border-collapse:collapse;margin-top:.5rem}
-  th,td{padding:8px;border-bottom:1px solid #e4d6bd;text-align:left}
-  th{background:#f7ead0}
-  .sms-hint{background:#fff4d6;border:2px dashed #c28b2c;border-radius:10px;padding:10px;margin-top:6px;color:#2d1a0a}
-
   /* Effet parchemin */
   .parchment{
     position:relative;
@@ -60,21 +47,9 @@
     border-radius:10px;
     box-shadow: 0 3px 12px rgba(0,0,0,.25), inset 0 0 40px rgba(125,72,23,.15);
   }
-  .parchment:before, .parchment:after{
-    content:""; position:absolute; left:10px; right:10px; height:10px;
-    background:radial-gradient(circle at 50% 0, rgba(0,0,0,.18), rgba(0,0,0,0) 60%);
-    filter:blur(4px);
-  }
-  .parchment:before{ top:-6px; transform:scaleY(-1); opacity:.35 }
-  .parchment:after { bottom:-6px; opacity:.35 }
-  .parchment h3{ margin-top:0; font-family:'Alfa Slab One',serif; letter-spacing:.5px }
+  .parchment h3{ margin-top:0; font-family:'Alfa Slab One',serif }
   .parchment .lead{ font-weight:700; font-style:italic; margin:.3rem 0 .6rem }
   .parchment .icon{ font-size:1.2rem; margin-right:.35rem }
-
-  /* Mise en évidence du bouton Commencer si besoin */
-  @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
-  .pulse { animation:pulse 1s ease-in-out 3; }
-  #hintStart { color:#2d1a0a; background:#fff4d6; border:2px dashed #c28b2c; border-radius:8px; padding:6px 10px; display:none; }
 </style>
 </head>
 <body>
@@ -86,14 +61,10 @@
   <!-- Accès -->
   <section class="card" id="acces">
     <h2>Accès au jeu</h2>
-
-    <!-- Paiement -->
     <div class="row">
       <a class="btn primary" target="_blank" rel="noopener"
          href="https://www.paypal.com/ncp/payment/GLM2FB7ERYXKQ">💳 Payer 10 € (PayPal)</a>
     </div>
-
-    <!-- Envoi SMS (INARI + N° paiement) -->
     <div class="row">
       <input type="text" id="payerName" value="INARI" readonly />
       <input type="text" id="payerTxn" placeholder="N° de paiement PayPal" />
@@ -101,7 +72,6 @@
     </div>
     <div id="smsHint" class="sms-hint" style="display:none;"></div>
 
-    <!-- Pseudo + Code + Valider -->
     <div class="row">
       <div class="row" style="gap:.4rem">
         <input type="text" id="playerName" placeholder="Ton pseudo (obligatoire)" />
@@ -114,16 +84,13 @@
       <button class="btn" id="btnValiderCode">Valider pseudo + code</button>
     </div>
 
-    <!-- HUD -->
     <div class="row hud">
       <span class="chip">⏱ Temps : <span id="chrono">00:00:00</span></span>
       <span>Statut : <span id="badge" class="badge ko">verrouillé</span></span>
     </div>
-
     <div class="hr"></div>
     <div class="row">
       <button class="btn primary" id="btnCommencer" disabled>Commencer le jeu</button>
-      <span id="hintStart">Appuie sur « Commencer le jeu » pour afficher l’Énigme 1.</span>
       <button class="btn" id="btnScanner" disabled>Scanner le QR code</button>
     </div>
   </section>
@@ -132,9 +99,6 @@
   <section class="card">
     <h2>Carte du parcours</h2>
     <div class="map-wrap">
-      <div class="map-tools">
-        <a class="btn" download href="carte-schoelcher.jpg">Télécharger</a>
-      </div>
       <div class="map-frame">
         <img class="map-img" id="mapImg" src="carte-schoelcher.jpg" alt="Carte du jeu de piste à Schœlcher">
       </div>
@@ -144,7 +108,7 @@
   <!-- Énigmes -->
   <section id="bloc-enigmes" class="card" style="display:none;">
     <h2>Énigmes</h2>
-    <p id="txtVisibility">Seule l’Énigme 1 est visible au départ. Pour débloquer les suivantes, scanne les bons QR codes dans l’ordre.</p>
+    <p id="txtVisibility">Seule l’Énigme 1 est visible au départ. Les suivantes s’ouvrent en scannant les bons QR codes.</p>
 
     <article id="enigme1" class="enigme">
       <div class="parchment">
@@ -154,243 +118,59 @@
       </div>
     </article>
 
-    <article id="enigme2" class="enigme"><h3>Énigme 2</h3><p><em>(Ton ÉNIGME 2 ici)</em></p></article>
+    <article id="enigme2" class="enigme">
+      <div class="parchment">
+        <h3>🌿 Énigme 2</h3>
+        <p class="lead">Passage Ombragé<br>Nature Taguée</p>
+        <p>Représentent ta prochaine destination.</p>
+      </div>
+    </article>
+
     <article id="enigme3" class="enigme"><h3>Énigme 3</h3><p><em>(Ton ÉNIGME 3 ici)</em></p></article>
     <article id="enigme4" class="enigme"><h3>Énigme 4</h3><p><em>(Ton ÉNIGME 4 ici)</em></p></article>
     <article id="fin" class="enigme"><h3>Bravo 🎉</h3><p>Tu as terminé le parcours !</p></article>
   </section>
 
-  <!-- Scanner -->
-  <div id="scanModal" role="dialog" aria-modal="true">
-    <div id="scanBox">
-      <h3 style="font-family:'Alfa Slab One',serif;">Scanner un QR code</h3>
-      <p class="muted">Autorise la caméra. Sinon, saisis le code manuellement.</p>
-      <video id="video" playsinline muted></video>
-      <div class="row">
-        <input type="text" id="qrManual" placeholder="Code QR manuel (ex: ENIGME-2)" />
-        <button class="btn" id="btnValiderQR" type="button">Valider</button>
-        <button class="btn" id="btnFermerScan" type="button">Fermer</button>
-      </div>
-      <p id="scanMsg" class="muted"></p>
-    </div>
-  </div>
-
-  <!-- Classement -->
-  <section class="card" id="classement">
-    <h2>Classement – Top 5</h2>
-    <table id="boardTable">
-      <thead><tr><th>#</th><th>Pseudo</th><th>Temps</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </section>
-
 <script>
-  /* =================== CONFIG =================== */
   const CONTACT_PHONE = "+596696327693";
-  const ACCESS_CODES  = ["SCHOELCHER-10"]; // codes valides
-  const PLAYER_KEY    = "jp_player_name";
-  const BOARD_KEY     = "jp_board";
+  const ACCESS_CODES  = ["SCHOELCHER-10"];
   const QR_FLOW = [
     { nextId:"enigme2", value:"ENIGME-2" },
     { nextId:"enigme3", value:"ENIGME-3" },
     { nextId:"enigme4", value:"ENIGME-4" },
     { nextId:"fin",     value:"FIN" }
   ];
-  /* ============================================= */
 
-  // Helpers DOM
   const $ = s => document.querySelector(s);
   const badge=$("#badge"), btnCommencer=$("#btnCommencer"), btnScanner=$("#btnScanner");
   const blocEnigmes=$("#bloc-enigmes"), codeInput=$("#codeInput"), btnValiderCode=$("#btnValiderCode");
-  const playerNameInput=$("#playerName"), chronoEl=$("#chrono");
-  const payerTxn=$("#payerTxn"), btnEnvoyerSMS=$("#btnEnvoyerSMS"), smsHint=$("#smsHint");
-  const badgePseudo=$("#badgePseudo"), badgeCode=$("#badgeCode");
+  const playerNameInput=$("#playerName");
 
-  // Normaliser le code : accents (NFD), supprimer espaces/_, slashs, et tous les tirets courants
-  function normalize(s){
-    return (s||"")
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')    // diacritiques
-      .replace(/[\s_\/\\]+/g,'')                         // espaces, _, /, \
-      .replace(/[-–—﹘﹣－]+/g,'')                        // tirets
-      .toUpperCase();
-  }
+  function normalize(s){return (s||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[\s_\/\\-]+/g,'').toUpperCase();}
   const ACCESS_SET = new Set(ACCESS_CODES.map(normalize));
 
-  // Accès (badge global)
-  function setAccess(ok){
-    if(ok){
-      badge.textContent="déverrouillé";
-      badge.classList.remove("ko"); badge.classList.add("ok");
-      updateStartButton();
-    }else{
-      badge.textContent="verrouillé";
-      badge.classList.remove("ok"); badge.classList.add("ko");
-      btnCommencer.disabled=true; btnScanner.disabled=true; blocEnigmes.style.display="none";
-    }
-  }
-  setAccess(false);
-
-  // Chrono
-  let startTime=null, timerInterval=null;
-  const pad=x=>String(x).padStart(2,"0");
-  const fmt=sec=>`${pad(Math.floor(sec/3600))}:${pad(Math.floor((sec%3600)/60))}:${pad(Math.floor(sec%60))}`;
-  function tick(){ chronoEl.textContent=fmt(Math.floor((Date.now()-startTime)/1000)); }
-  function startChrono(){ if(timerInterval)clearInterval(timerInterval); startTime=Date.now(); timerInterval=setInterval(tick,1000); tick(); }
-  function stopChrono(){ if(!startTime)return; clearInterval(timerInterval); timerInterval=null; }
-
-  // Classement local Top 5
-  function renderBoard(){
-    const tbody = document.querySelector("#boardTable tbody"); tbody.innerHTML="";
-    let board={}; try{ board = JSON.parse(localStorage.getItem(BOARD_KEY)||"{}"); }catch(_){}
-    const sorted = Object.entries(board).sort((a,b)=>a[1]-b[1]).slice(0,5);
-    if(!sorted.length){ tbody.innerHTML="<tr><td colspan='3'>Aucun joueur</td></tr>"; return; }
-    sorted.forEach(([name,sec],i)=>{
-      const tr=document.createElement("tr"); tr.innerHTML=`<td>${i+1}</td><td>${name}</td><td>${fmt(sec)}</td>`;
-      tbody.appendChild(tr);
-    });
-  }
-  renderBoard();
-
-  function saveScore(){
-    if(!startTime) return;
-    const elapsed = Math.floor((Date.now()-startTime)/1000);
-    stopChrono();
-    const name = (playerNameInput.value||"").trim();
-    if(!name) return;
-    let board={}; try{ board = JSON.parse(localStorage.getItem(BOARD_KEY)||"{}"); }catch(_){}
-    if(!(name in board) || elapsed < board[name]) board[name] = elapsed;
-    localStorage.setItem(BOARD_KEY, JSON.stringify(board));
-    renderBoard();
-  }
-
-  function updateStartButton(){
-    const hasPseudo = !!(playerNameInput.value||"").trim();
-    btnCommencer.disabled = !hasPseudo || badge.classList.contains("ko");
-  }
-  playerNameInput.addEventListener("input", updateStartButton);
-
-  // Restaurer pseudo si déjà connu
-  const savedPlayer = localStorage.getItem(PLAYER_KEY);
-  if(savedPlayer){ playerNameInput.value = savedPlayer; }
-
-  // === Valider PSEUDO + CODE (et AFFICHER ÉNIGME 1 automatiquement) ===
   btnValiderCode.addEventListener("click", ()=>{
     const pseudo = (playerNameInput.value||"").trim();
     const entered = normalize(codeInput.value);
-    if(!pseudo){
-      alert("Entre d’abord ton pseudo.");
-      badgePseudo.textContent="à renseigner"; badgePseudo.className="mini-badge mini-ko";
-      return;
-    }
-    if(!entered){
-      alert("Entre le code d’accès.");
-      badgeCode.textContent="à renseigner"; badgeCode.className="mini-badge mini-ko";
-      return;
-    }
-    if(!ACCESS_SET.has(entered)){
-      alert("Code invalide ❌");
-      badgeCode.textContent="invalide"; badgeCode.className="mini-badge mini-ko";
-      return;
-    }
-    // OK : on valide les deux
-    localStorage.setItem(PLAYER_KEY, pseudo);
-    setAccess(true);
-    // Badges “Validé”
-    badgePseudo.textContent="✅ Validé"; badgePseudo.className="mini-badge mini-ok";
-    badgeCode.textContent="✅ Validé";   badgeCode.className="mini-badge mini-ok";
-    // Verrouille les champs + bouton
-    playerNameInput.readOnly = true;
-    codeInput.readOnly = true;
-    btnValiderCode.disabled = true;
-
-    // 👉 Affiche immédiatement l’Énigme 1
-    document.getElementById("bloc-enigmes").style.display="block";
-    showOnly("enigme1");
-    btnScanner.disabled = false;
-
-    alert("✅ Pseudo et code validés. L’Énigme 1 est affichée.");
+    if(!pseudo||!entered||!ACCESS_SET.has(entered)){alert("Code ou pseudo invalide");return;}
+    badge.textContent="déverrouillé"; badge.classList.remove("ko"); badge.classList.add("ok");
+    btnCommencer.disabled=false;
   });
 
-  // Commencer (optionnel)
   btnCommencer.addEventListener("click", ()=>{
-    if(btnCommencer.disabled) return;
-    document.getElementById("bloc-enigmes").style.display="block";
-    showOnly("enigme1");
-    btnScanner.disabled = false;
-    if(!startTime) startChrono();
+    blocEnigmes.style.display="block";
+    document.getElementById("enigme1").style.display="block";
+    btnScanner.disabled=false;
   });
 
-  // Scanner & progression
-  const scanModal=document.getElementById("scanModal"), video=document.getElementById("video"),
-        qrManual=document.getElementById("qrManual"), scanMsg=document.getElementById("scanMsg");
-  const btnValiderQR=document.getElementById("btnValiderQR"), btnFermerScan=document.getElementById("btnFermerScan");
-  let stream, detector;
-
-  btnScanner.addEventListener("click", openScan);
-  btnFermerScan.addEventListener("click", closeScan);
-  btnValiderQR.addEventListener("click", ()=>{ const v=(qrManual.value||"").trim(); if(!v){scanMsg.textContent="Entre un code.";return;} handleQR(v); });
-
-  async function openScan(){
-    scanMsg.textContent = "";
-    scanModal.style.display = "flex";
-    try{
-      if('BarcodeDetector' in window) detector = new BarcodeDetector({formats:['qr_code']});
-      stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-      video.srcObject = stream; await video.play();
-      if(detector) requestAnimationFrame(tickScan);
-    }catch(e){ scanMsg.textContent="Caméra indisponible. Utilise la saisie manuelle."; }
-  }
-  async function tickScan(){
-    try{
-      const codes = await detector.detect(video);
-      if(codes.length){ handleQR((codes[0].rawValue||"").trim()); return; }
-    }catch(_){}
-    if(scanModal.style.display==="flex") requestAnimationFrame(tickScan);
-  }
-  function closeScan(){ scanModal.style.display="none"; if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;} }
-
+  // QR handling (simulation: saisie manuelle ou scan)
+  function unlock(id){document.getElementById(id).style.display="block";}
   function handleQR(value){
-    const order=["enigme2","enigme3","enigme4","fin"];
-    const next = order.find(step => !document.getElementById(step).dataset.unlocked);
-    const item = QR_FLOW.find(x=>x.nextId===next);
-    if(!item){ scanMsg.textContent="Tout est déjà débloqué ✅"; closeScan(); return; }
-    if(value===item.value){
-      unlock(next); closeScan(); alert("QR validé ✅");
-    }else{
-      scanMsg.textContent="QR incorrect ❌";
-    }
+    const item = QR_FLOW.find(x=>x.value===value);
+    if(item) unlock(item.nextId);
   }
-  function unlock(id){
-    showOnly(id);
-    document.getElementById(id).dataset.unlocked="1";
-    if(id==="fin") saveScore();
-  }
-  function showOnly(id){
-    const order=["enigme1","enigme2","enigme3","enigme4","fin"];
-    const idx=order.indexOf(id);
-    document.querySelectorAll(".enigme").forEach(e=>e.style.display="none");
-    for(let i=0;i<=idx;i++){ const el=document.getElementById(order[i]); if(el) el.style.display="block"; }
-  }
-
-  // SMS (INARI + compat iOS/Android + plan B)
-  const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const isAndroid=/Android/i.test(navigator.userAgent);
-  function buildSmsMessage(){
-    const txn=(payerTxn.value||"").trim();
-    if(!txn){ alert("Entre ton N° de paiement PayPal."); return null; }
-    return `INARI - Paiement: ${txn}`;
-  }
-  function smsHref(phone,text){
-    const num=phone.replace(/\s+/g,''); const body=encodeURIComponent(text);
-    if(isIOS) return `sms:${num}&body=${body}`;
-    if(isAndroid) return `smsto:${num}?body=${body}`;
-    return `sms:${num}?body=${body}`;
-  }
-  btnEnvoyerSMS.addEventListener("click",(e)=>{
-    const msg=buildSmsMessage(); if(!msg){e.preventDefault();return;}
-    btnEnvoyerSMS.setAttribute("href", smsHref(CONTACT_PHONE,msg));
-    setTimeout(()=>{ if(document.visibilityState==="visible"){ smsHint.style.display="block"; smsHint.innerHTML=`Si l’app SMS ne s’est pas ouverte, envoie un SMS au <strong>${CONTACT_PHONE}</strong> avec :<br><pre>${msg}</pre>`; } },1200);
-  });
+  // Pour test rapide sans caméra :
+  window.testQR = handleQR;
 </script>
 </body>
 </html>
