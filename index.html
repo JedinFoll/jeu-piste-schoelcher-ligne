@@ -122,19 +122,19 @@
     <h2>Énigmes</h2>
     <p id="txtVisibility">Seule l’Énigme 1 est visible au départ. Pour débloquer l’Énigme 2, scanne le bon QR code.</p>
 
-    <!-- ÉNIGME 1 : PDF (solution B) -->
+    <!-- ÉNIGME 1 (PDF à la RACINE du dépôt) -->
     <article id="enigme1" class="enigme">
       <div class="parchment">
         <h3>🗺️ Énigme 1</h3>
-        <object
-          data="assets/enigmes/enigme1.pdf#view=FitH"
-          type="application/pdf"
-          width="100%" height="520"
-          style="border:0;border-radius:10px">
-          <p>Impossible d’afficher le PDF.
-            <a href="assets/enigmes/enigme1.pdf" target="_blank" rel="noopener">Ouvrir l’Énigme 1 (PDF)</a>.
-          </p>
-        </object>
+        <!-- Lien direct + intégration -->
+        <p style="margin:0 0 .5rem">
+          <a class="btn" href="enigme1.pdf" target="_blank" rel="noopener">Ouvrir l’Énigme 1 (PDF)</a>
+        </p>
+        <iframe
+          src="enigme1.pdf#view=FitH"
+          title="Énigme 1 (PDF)"
+          style="width:100%;height:520px;border:0;border-radius:10px;background:#fff"
+          loading="lazy"></iframe>
       </div>
       <div class="row scan-row">
         <button class="btn" data-expects="ENIGME-2" onclick="scanNext(this)">Scanner le QR pour l’Énigme 2</button>
@@ -148,10 +148,11 @@
         <p class="lead">Passage Ombragé – Nature Taguée</p>
         <p>Représentent ta prochaine destination.</p>
       </div>
-      <!-- (pas de bouton suivant tant que tu ne définis pas l’Énigme 3) -->
+      <!-- Bouton scanner SOUS l’énigme 2 (prêt pour la suite) -->
+      <div class="row scan-row">
+        <button class="btn" data-expects="ENIGME-3" onclick="scanNext(this)">Scanner le QR pour l’Énigme 3</button>
+      </div>
     </article>
-
-    <!-- Fin s’affichera plus tard quand tu ajouteras les autres étapes -->
   </section>
 
   <!-- Scanner (vidéo) -->
@@ -275,6 +276,7 @@
     }catch(e){}
     const up = s.toUpperCase();
     if(/\bENIGME-2\b/.test(up)) return "ENIGME-2";
+    if(/\bENIGME-3\b/.test(up)) return "ENIGME-3";
     return null;
   }
 
@@ -293,8 +295,9 @@
     try{
       if('BarcodeDetector' in window){ detector=new BarcodeDetector({formats:['qr_code']}); }
       else{
+        const attendu = expectedNow || "ENIGME-2";
         scanMsg.innerHTML = "Scanner intégré indisponible.<br>"
-          +"Utilise l’appareil photo : le QR doit ouvrir cette page avec <code>?qr=ENIGME-2</code>.";
+          +"Utilise l’appareil photo : le QR doit ouvrir cette page avec <code>?qr="+attendu+"</code>.";
         return;
       }
       stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
@@ -323,15 +326,22 @@
 
   function progressFromQR(code){
     if(!hasAccess()){ alert("Accès requis. Merci d’acheter et valider avant d’utiliser les QR codes."); return; }
-    if(code!=="ENIGME-2"){ alert("QR inconnu ❌"); return; }
 
-    // étape attendue : débloquer l’énigme 2
-    const arr=getUnlocked();
-    if(!arr.includes("enigme1")){ alert("Commence par l’Énigme 1."); return; }
-    if(arr.includes("enigme2")){ alert("Énigme 2 déjà débloquée ✅"); renderProgress(); return; }
+    if(code==="ENIGME-2"){
+      const arr=getUnlocked();
+      if(!arr.includes("enigme1")){ alert("Commence par l’Énigme 1."); return; }
+      if(arr.includes("enigme2")){ alert("Énigme 2 déjà débloquée ✅"); renderProgress(); return; }
+      unlock("enigme2");
+      alert("Énigme 2 débloquée ✅");
+      return;
+    }
 
-    unlock("enigme2");
-    alert("Énigme 2 débloquée ✅");
+    if(code==="ENIGME-3"){
+      alert("L’Énigme 3 n’est pas encore en ligne. Réessaie plus tard.");
+      return;
+    }
+
+    alert("QR inconnu ❌");
   }
 
   /* ====== PAYWALL & URL ?qr= ====== */
