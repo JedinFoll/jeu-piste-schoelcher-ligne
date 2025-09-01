@@ -116,7 +116,9 @@
         <iframe src="enigme1.pdf#view=FitH" style="width:100%;height:520px;border:0;border-radius:10px;background:#fff" loading="lazy" title="Énigme 1"></iframe>
       </div>
       <div class="row scan-row">
-        <button class="btn" data-expects="ENIGME-2" onclick="scanNext(this)">Scanner le QR pour l’Énigme 2</button>
+      <button class="btn" data-expects="ENIGME-2" onclick="scanNext(this)">
+  Scanner le QR n°1 → Énigme 2
+</button>  
       </div>
     </article>
 
@@ -127,10 +129,24 @@
         <p>Représentent ta prochaine destination.</p>
       </div>
       <div class="row scan-row">
-        <button class="btn" data-expects="ENIGME-3" onclick="scanNext(this)">Scanner le QR pour l’Énigme 3</button>
+        <button class="btn" data-expects="ENIGME-3" onclick="scanNext(this)">
+  Scanner le QR n°2 → Énigme 3
+</button>
       </div>
     </article>
-
+    <article id="enigme3" class="enigme">
+      <div class="parchment">
+        <h3>🌿 Énigme 3</h3>
+        
+      </div>
+      <div class="row scan-row">
+        <button class="btn" data-expects="ENIGME-4" onclick="scanNext(this)">
+  Scanner le QR n°3 → Énigme 4
+</button>
+      </div>
+    </article>
+      </div>
+    </article>
     <!-- Prépare les PDF enigme3.pdf ... enigme7.pdf à la racine (ou change les noms) -->
     <article id="enigme3" class="enigme"><div class="parchment"><h3>🔐 Énigme 3</h3></div><div class="row scan-row"><button class="btn" data-expects="ENIGME-4" onclick="scanNext(this)">Scanner le QR pour l’Énigme 4</button></div></article>
     <article id="enigme4" class="enigme"><div class="parchment"><h3>🧭 Énigme 4</h3></div><div class="row scan-row"><button class="btn" data-expects="ENIGME-5" onclick="scanNext(this)">Scanner le QR pour l’Énigme 5</button></div></article>
