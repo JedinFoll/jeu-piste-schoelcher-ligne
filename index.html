@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="fr">
 <head>
@@ -116,45 +115,20 @@
         <iframe src="enigme1.pdf#view=FitH" style="width:100%;height:520px;border:0;border-radius:10px;background:#fff" loading="lazy" title="Énigme 1"></iframe>
       </div>
       <div class="row scan-row">
-      <button class="btn" data-expects="ENIGME-2" onclick="scanNext(this)">
-  Scanner le QR n°1 → Énigme 2
-</button>  
+        <button class="btn" data-expects="ENIGME-2" onclick="scanNext(this)">Scanner le QR pour l’Énigme 2</button>
       </div>
     </article>
-<!-- ÉNIGME 2 -->
-<article id="enigme2" class="enigme">
-  <div class="parchment">
-    <h3>🌿 Énigme 2</h3>
-    <p class="lead">Passage Ombragé – Nature Taguée</p>
-    <p>Représentent ta prochaine destination.</p>
-  </div>
-  <div class="row scan-row">
-    <button class="btn" data-expects="ENIGME-3" onclick="scanNext(this)">
-      Scanner le QR n°2 → Énigme 3
-    </button>
-  </div>
-</article>
 
-<!-- ÉNIGME 3 (PDF intégré depuis ton GitHub) -->
-<article id="enigme3" class="enigme">
-  <div class="parchment">
-    <h3>🔐 Énigme 3</h3>
-    <object
-      data="enigme3.pdf#view=FitH"
-      type="application/pdf"
-      width="100%" height="520"
-      style="border:0;border-radius:10px">
-      <p>Impossible d’afficher le PDF.
-        <a href="enigme3.pdf" target="_blank" rel="noopener">Ouvrir l’Énigme 3 (PDF)</a>.
-      </p>
-    </object>
-  </div>
-  <div class="row scan-row">
-    <button class="btn" data-expects="ENIGME-4" onclick="scanNext(this)">
-      Scanner le QR n°3 → Énigme 4
-    </button>
-  </div>
-</article>
+    <article id="enigme2" class="enigme">
+      <div class="parchment">
+        <h3>🌿 Énigme 2</h3>
+        <p class="lead">Passage Ombragé – Nature Taguée</p>
+        <p>Représentent ta prochaine destination.</p>
+      </div>
+      <div class="row scan-row">
+        <button class="btn" data-expects="ENIGME-3" onclick="scanNext(this)">Scanner le QR pour l’Énigme 3</button>
+      </div>
+    </article>
 
     <!-- Prépare les PDF enigme3.pdf ... enigme7.pdf à la racine (ou change les noms) -->
     <article id="enigme3" class="enigme"><div class="parchment"><h3>🔐 Énigme 3</h3></div><div class="row scan-row"><button class="btn" data-expects="ENIGME-4" onclick="scanNext(this)">Scanner le QR pour l’Énigme 4</button></div></article>
@@ -309,4 +283,3 @@
 </script>
 </body>
 </html>
- 
