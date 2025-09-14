@@ -1,4 +1,4 @@
-<!doctype html> 
+<!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8" />
@@ -59,6 +59,7 @@
     <p>Munis-toi de papier et crayon, scanne les QR codes et résous les énigmes.</p>
   </div>
 
+  <!-- Accès -->
   <section class="card" id="acces">
     <h2>Accès au jeu</h2>
     <div class="row">
@@ -95,6 +96,7 @@
     </div>
   </section>
 
+  <!-- Carte -->
   <section class="card">
     <h2>Carte du parcours</h2>
     <div class="map-wrap">
@@ -104,11 +106,12 @@
     </div>
   </section>
 
+  <!-- Énigmes -->
   <section id="bloc-enigmes" class="card" style="display:none;">
     <h2>Énigmes</h2>
     <p>Chaque QR débloque uniquement son énigme dédiée, dans l’ordre.</p>
 
-    <!-- Énigme 1 (PDF visible sans QR) -->
+    <!-- Énigme 1 -->
     <article id="enigme1" class="enigme">
       <div class="parchment">
         <h3>🗺️ Énigme 1</h3>
@@ -136,7 +139,7 @@
       </div>
     </article>
 
-    <!-- Énigme 3 (PDF intégré) -->
+    <!-- Énigme 3 (PDF) -->
     <article id="enigme3" class="enigme">
       <div class="parchment">
         <h3>🔐 Énigme 3</h3>
@@ -157,49 +160,11 @@
       </div>
     </article>
 
-    <!-- Énigme 4 -->
-    <article id="enigme4" class="enigme">
-      <div class="parchment">
-        <h3>🧭 Énigme 4</h3>
-      </div>
-      <div class="row scan-row">
-        <button class="btn" data-expects="ENIGME-5" onclick="scanNext(this)">
-          Scanner le QR n°4 → Énigme 5
-        </button>
-      </div>
-    </article>
-
-    <!-- Énigme 5 -->
-    <article id="enigme5" class="enigme">
-      <div class="parchment">
-        <h3>⚓ Énigme 5</h3>
-      </div>
-      <div class="row scan-row">
-        <button class="btn" data-expects="ENIGME-6" onclick="scanNext(this)">
-          Scanner le QR n°5 → Énigme 6
-        </button>
-      </div>
-    </article>
-
-    <!-- Énigme 6 -->
-    <article id="enigme6" class="enigme">
-      <div class="parchment">
-        <h3>🏛️ Énigme 6</h3>
-      </div>
-      <div class="row scan-row">
-        <button class="btn" data-expects="ENIGME-7" onclick="scanNext(this)">
-          Scanner le QR n°6 → Énigme 7
-        </button>
-      </div>
-    </article>
-
-    <!-- Énigme 7 (fin) -->
-    <article id="enigme7" class="enigme">
-      <div class="parchment">
-        <h3>🏁 Énigme 7</h3>
-        <p>Bravo !</p>
-      </div>
-    </article>
+    <!-- Prépare la suite plus tard -->
+    <article id="enigme4" class="enigme"><div class="parchment"><h3>🧭 Énigme 4</h3></div><div class="row scan-row"><button class="btn" data-expects="ENIGME-5" onclick="scanNext(this)">Scanner le QR n°4 → Énigme 5</button></div></article>
+    <article id="enigme5" class="enigme"><div class="parchment"><h3>⚓ Énigme 5</h3></div><div class="row scan-row"><button class="btn" data-expects="ENIGME-6" onclick="scanNext(this)">Scanner le QR n°5 → Énigme 6</button></div></article>
+    <article id="enigme6" class="enigme"><div class="parchment"><h3>🏛️ Énigme 6</h3></div><div class="row scan-row"><button class="btn" data-expects="ENIGME-7" onclick="scanNext(this)">Scanner le QR n°6 → Énigme 7</button></div></article>
+    <article id="enigme7" class="enigme"><div class="parchment"><h3>🏁 Énigme 7</h3><p>Bravo !</p></div></article>
   </section>
 
   <!-- Scanner -->
@@ -215,6 +180,7 @@
     </div>
   </div>
 
+  <!-- Classement -->
   <section class="card" id="classement">
     <h2>Classement – Top 5</h2>
     <table id="boardTable">
@@ -224,12 +190,15 @@
   </section>
 
 <script>
-  /* ===== CONFIG ===== */
+  /* ========= CONFIG ========= */
   const CONTACT_PHONE = "+596696327693";
   const ACCESS_CODES  = ["SCHOELCHER-10"];
-  const KEY_ACCESS="jp_access", KEY_PSEUDO="jp_player", KEY_STARTED="jp_started", KEY_UNLOCKED="jp_unlocked", KEY_START_TIME="jp_start_time";
 
-  /* DOM */
+  /* ===== Storage Keys ===== */
+  const KEY_ACCESS="jp_access", KEY_PSEUDO="jp_player", KEY_STARTED="jp_started",
+        KEY_UNLOCKED="jp_unlocked", KEY_START_TIME="jp_start_time";
+
+  /* ===== DOM ===== */
   const $=s=>document.querySelector(s);
   const badge=$("#badge"), btnCommencer=$("#btnCommencer");
   const blocEnigmes=$("#bloc-enigmes"), codeInput=$("#codeInput"), btnValiderCode=$("#btnValiderCode");
@@ -237,47 +206,77 @@
   const payerTxn=$("#payerTxn"), btnEnvoyerSMS=$("#btnEnvoyerSMS"), smsHint=$("#smsHint");
   const scanModal=$("#scanModal"), video=$("#video"), btnFermerScan=$("#btnFermerScan"), scanMsg=$("#scanMsg"), scanRaw=$("#scanRaw");
 
-  /* Utils */
+  /* ===== Utils ===== */
   function normalize(s){return (s||"").normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[\s_\/\\]+/g,'').replace(/[-–—﹘﹣－]+/g,'').toUpperCase();}
   const ACCESS_SET=new Set(ACCESS_CODES.map(normalize));
   const hasAccess=()=>localStorage.getItem(KEY_ACCESS)==="1";
   function setAccessUI(ok){ if(ok){badge.textContent="déverrouillé";badge.classList.remove("ko");badge.classList.add("ok");} else {badge.textContent="verrouillé";badge.classList.remove("ok");badge.classList.add("ko");} updateStartButton(); }
 
-  /* Chrono */
+  /* ===== Chrono ===== */
   let startTime=null, timerInterval=null;
   const pad=n=>String(n).padStart(2,"0");
   const fmt=s=>`${pad(Math.floor(s/3600))}:${pad(Math.floor((s%3600)/60))}:${pad(Math.floor(s%60))}`;
   function tick(){ if(startTime){ chronoEl.textContent=fmt(Math.floor((Date.now()-startTime)/1000)); } }
   function startChrono(){ if(timerInterval) clearInterval(timerInterval); if(!startTime) startTime=Date.now(); localStorage.setItem(KEY_START_TIME,String(startTime)); timerInterval=setInterval(tick,1000); tick(); }
 
-  /* Progression */
+  /* ===== Progression ===== */
   const order=["enigme1","enigme2","enigme3","enigme4","enigme5","enigme6","enigme7"];
   function getUnlocked(){ try{return JSON.parse(localStorage.getItem(KEY_UNLOCKED)||"[]");}catch(_){return[];} }
   function setUnlocked(arr){ localStorage.setItem(KEY_UNLOCKED, JSON.stringify(arr)); }
-  function unlock(id){const arr=getUnlocked(); if(!arr.includes(id)) arr.push(id); setUnlocked(arr); renderProgress();}
-  function renderProgress(){const arr=getUnlocked(); if(localStorage.getItem(KEY_STARTED)==="1") blocEnigmes.style.display="block"; document.querySelectorAll(".enigme").forEach(e=>e.style.display="none"); arr.forEach(id=>{const el=document.getElementById(id); if(el) el.style.display="block";});}
+  function unlock(id){ const arr=getUnlocked(); if(!arr.includes(id)) arr.push(id); setUnlocked(arr); renderProgress(); scrollInto(id); }
+  function renderProgress(){
+    const arr=getUnlocked();
+    if(localStorage.getItem(KEY_STARTED)==="1") blocEnigmes.style.display="block";
+    document.querySelectorAll(".enigme").forEach(e=>e.style.display="none");
+    arr.forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display="block"; });
+  }
+  function nextId(){
+    const arr=getUnlocked();
+    return order.find(id=>!arr.includes(id)) || "enigme7";
+  }
+  function scrollInto(id){ const el=document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }
 
-  /* Accès */
+  /* ===== Accès ===== */
   function updateStartButton(){ const hasPseudo=!!(playerNameInput.value||"").trim(); btnCommencer.disabled=!hasPseudo||!hasAccess(); }
   playerNameInput.addEventListener("input", ()=>{ localStorage.setItem(KEY_PSEUDO, playerNameInput.value||""); updateStartButton(); });
-  btnValiderCode.addEventListener("click", ()=>{ const pseudo=(playerNameInput.value||"").trim(); const entered=normalize(codeInput.value); if(!pseudo){alert("Entre ton pseudo.");return;} if(!ACCESS_SET.has(entered)){alert("Code invalide ❌");return;} localStorage.setItem(KEY_PSEUDO,pseudo); localStorage.setItem(KEY_ACCESS,"1"); setAccessUI(true); playerNameInput.readOnly=true; codeInput.readOnly=true; btnValiderCode.disabled=true; alert("✅ Accès validé. Appuie sur « Commencer le jeu »."); });
+  btnValiderCode.addEventListener("click", ()=>{ const pseudo=(playerNameInput.value||"").trim(); const entered=normalize(codeInput.value);
+    if(!pseudo){alert("Entre ton pseudo.");return;}
+    if(!ACCESS_SET.has(entered)){alert("Code invalide ❌");return;}
+    localStorage.setItem(KEY_PSEUDO,pseudo); localStorage.setItem(KEY_ACCESS,"1"); setAccessUI(true);
+    playerNameInput.readOnly=true; codeInput.readOnly=true; btnValiderCode.disabled=true;
+    alert("✅ Accès validé. Appuie sur « Commencer le jeu ».");
+  });
+  btnCommencer.addEventListener("click", ()=>{
+    if(btnCommencer.disabled) return;
+    localStorage.setItem(KEY_STARTED,"1");
+    const arr=getUnlocked(); if(!arr.includes("enigme1")) arr.push("enigme1"); setUnlocked(arr);
+    renderProgress(); startChrono(); scrollInto("enigme1");
+  });
 
-  btnCommencer.addEventListener("click", ()=>{ if(btnCommencer.disabled) return; localStorage.setItem(KEY_STARTED,"1"); const arr=getUnlocked(); if(!arr.includes("enigme1")) arr.push("enigme1"); setUnlocked(arr); renderProgress(); startChrono(); });
-
-  /* Extraction tolérante du code depuis URL/texte */
+  /* ===== Extraction tolérante du code ===== */
   function extractQR(raw){
     const s = String(raw||"").trim();
+    // URL avec ?qr=
     try{ const u=new URL(s); const q=(u.searchParams.get("qr")||"").toUpperCase(); if(q) return q; }catch(e){}
     const up = s.toUpperCase();
+    // Variantes usuelles
     let m = up.match(/\bENIGME[\s\-]?([2-7])\b/); if(m) return `ENIGME-${m[1]}`;
     m = up.match(/\b(?:E|QR)[\s\-]?([2-7])\b/);  if(m) return `ENIGME-${m[1]}`;
     m = up.match(/^\s*([2-7])\s*$/);            if(m) return `ENIGME-${m[1]}`;
+    // Contenu brut qui contient explicitement ENIGME-3 etc.
+    m = up.match(/ENIGME-([2-7])/);             if(m) return `ENIGME-${m[1]}`;
     return null;
   }
 
-  /* Scanner */
+  /* ===== Scanner ===== */
+  const QR_TO_STEP={ "ENIGME-2":"enigme2","ENIGME-3":"enigme3","ENIGME-4":"enigme4","ENIGME-5":"enigme5","ENIGME-6":"enigme6","ENIGME-7":"enigme7" };
   let stream=null, detector=null, rafId=null, expectedNow=null;
-  window.scanNext = (btn)=>{ if(!hasAccess()){alert("Accès requis. Merci de valider votre paiement.");return;} if(localStorage.getItem(KEY_STARTED)!=="1"){alert("Commence le jeu d’abord.");return;} expectedNow=btn.getAttribute("data-expects")||null; openScan(); };
+  window.scanNext = (btn)=>{
+    if(!hasAccess()){ alert("Accès requis. Merci de valider votre paiement."); return; }
+    if(localStorage.getItem(KEY_STARTED)!=="1"){ alert("Commence le jeu d’abord."); return; }
+    expectedNow = btn.getAttribute("data-expects") || null;
+    openScan();
+  };
 
   async function openScan(){
     scanMsg.textContent="Cadre le QR dans la vue. Valeur lue ci-dessous.";
@@ -301,50 +300,88 @@
       if(codes && codes.length){
         const raw=(codes[0].rawValue||"").trim();
         scanRaw.textContent = "Lu : " + raw;
-        const code = extractQR(raw);
-        if(code){ progressFromQR(code); closeScan(); return; }
+        let code = extractQR(raw); // ENIGME-x si détectable
+        // Sécurisation : si le code lu ne correspond pas à l’étape attendue, on force l’étape attendue
+        const wantedId = expectedNow ? QR_TO_STEP[expectedNow] : null;
+        const targetFromRead = code ? QR_TO_STEP[code] : null;
+        const nxt = nextId();
+        let targetId = null;
+
+        if (targetFromRead && targetFromRead === nxt){
+          targetId = targetFromRead; // lecture parfaite
+        } else if (wantedId && wantedId === nxt){
+          targetId = wantedId;       // on respecte le bouton d’où vient le scan
+        } else if (targetFromRead){   // code lu valide mais pas le bon moment
+          alert("Ce QR n’est pas attendu maintenant.");
+          closeScan(); return;
+        } else {
+          // rien de compris
+          scanMsg.textContent = "QR non reconnu.";
+          // on reste dans la boucle de scan
+          rafId=requestAnimationFrame(tickScan);
+          return;
+        }
+
+        unlock(targetId);
+        alert(`Énigme débloquée ✅ (${targetId.toUpperCase()})`);
+        closeScan(); return;
       }
     }catch(_){}
     rafId=requestAnimationFrame(tickScan);
   }
   function closeScan(){ scanModal.style.display="none"; if(rafId){cancelAnimationFrame(rafId); rafId=null;} if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null;} }
 
-  /* Mapping strict QR -> étape */
-  const QR_TO_STEP={ "ENIGME-2":"enigme2","ENIGME-3":"enigme3","ENIGME-4":"enigme4","ENIGME-5":"enigme5","ENIGME-6":"enigme6","ENIGME-7":"enigme7" };
-  function progressFromQR(code){
-    if(!hasAccess()){ alert("Accès requis. Merci d’acheter et valider avant d’utiliser les QR codes."); return; }
-    const targetId = QR_TO_STEP[code]; if(!targetId){ alert("QR inconnu ❌"); return; }
-    const arr=getUnlocked(); const nextId = order.find(id=>!arr.includes(id)) || "enigme7";
-    if(targetId!==nextId){
-      if(arr.includes(targetId)){ alert("Étape déjà débloquée ✅"); renderProgress(); }
-      else { alert("Ce QR n’est pas attendu maintenant."); }
-      return;
-    }
-    unlock(targetId); alert(`Énigme débloquée ✅ (${targetId.toUpperCase()})`);
-  }
-
-  /* Paywall via ?qr=... */
+  /* ===== Paywall via ?qr=... ===== */
   (function gateFromURL(){
-    const params=new URLSearchParams(location.search); const q=params.get("qr"); if(q) history.replaceState({}, "", location.pathname); if(!q) return;
+    const params=new URLSearchParams(location.search);
+    const q=params.get("qr");
+    if(q) history.replaceState({}, "", location.pathname);
+    if(!q) return;
     if(!hasAccess()){ alert("Accès requis. Merci de valider votre paiement avant d’utiliser les QR codes."); setAccessUI(false); return; }
-    if(localStorage.getItem(KEY_STARTED)!=="1"){ localStorage.setItem(KEY_STARTED,"1"); const arr=getUnlocked(); if(!arr.includes("enigme1")){arr.push("enigme1"); setUnlocked(arr);} }
-    const code = extractQR(q); if(code){ progressFromQR(code); renderProgress(); }
+    if(localStorage.getItem(KEY_STARTED)!=="1"){
+      localStorage.setItem(KEY_STARTED,"1");
+      const arr=getUnlocked(); if(!arr.includes("enigme1")){arr.push("enigme1"); setUnlocked(arr);}
+    }
+    const code = extractQR(q);
+    const targetId = code ? QR_TO_STEP[code] : null;
+    if(!targetId){ alert("QR non reconnu via l’URL."); return; }
+    const nxt = nextId();
+    if(targetId!==nxt){ alert("Ce QR n’est pas attendu maintenant."); return; }
+    unlock(targetId); renderProgress(); scrollInto(targetId);
   })();
 
-  /* Restauration */
+  /* ===== Restauration ===== */
   (function restore(){
     setAccessUI(hasAccess());
     const p = localStorage.getItem(KEY_PSEUDO)||""; if(p){ playerNameInput.value=p; playerNameInput.readOnly=hasAccess(); }
     if(hasAccess()){ codeInput.readOnly=true; btnValiderCode.disabled=true; }
     updateStartButton();
-    if(localStorage.getItem(KEY_STARTED)==="1"){ blocEnigmes.style.display="block"; renderProgress(); const t=parseInt(localStorage.getItem(KEY_START_TIME)||"0",10); if(t>0){ startTime=t; startChrono(); } }
+    if(localStorage.getItem(KEY_STARTED)==="1"){
+      blocEnigmes.style.display="block";
+      renderProgress();
+      const t=parseInt(localStorage.getItem(KEY_START_TIME)||"0",10);
+      if(t>0){ startTime=t; startChrono(); }
+    }
   })();
 
-  /* SMS INARI */
+  /* ===== SMS (INARI) ===== */
   const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent), isAndroid=/Android/i.test(navigator.userAgent);
-  function buildSmsMessage(){ const txn=(payerTxn.value||"").trim(); if(!txn){ alert("Entre ton N° de paiement PayPal."); return null; } return `INARI - Paiement: ${txn}`; }
-  function smsHref(phone,text){ const num=phone.replace(/\s+/g,''); const body=encodeURIComponent(text); if(isIOS) return `sms:${num}&body=${body}`; if(isAndroid) return `smsto:${num}?body=${body}`; return `sms:${num}?body=${body}`; }
-  document.getElementById("btnEnvoyerSMS").addEventListener("click",(e)=>{ const msg=buildSmsMessage(); if(!msg){e.preventDefault();return;} e.currentTarget.setAttribute("href", smsHref(CONTACT_PHONE,msg)); setTimeout(()=>{ if(document.visibilityState==="visible"){ smsHint.style.display="block"; smsHint.innerHTML=`Si l’app SMS ne s’est pas ouverte, envoie un SMS au <strong>${CONTACT_PHONE}</strong> avec :<br><pre>${msg}</pre>`; } },1200); });
+  function buildSmsMessage(){
+    const txn=(payerTxn.value||"").trim();
+    if(!txn){ alert("Entre ton N° de paiement PayPal."); return null; }
+    return `INARI - Paiement: ${txn}`;
+  }
+  function smsHref(phone,text){
+    const num=phone.replace(/\s+/g,''); const body=encodeURIComponent(text);
+    if(isIOS) return `sms:${num}&body=${body}`;
+    if(isAndroid) return `smsto:${num}?body=${body}`;
+    return `sms:${num}?body=${body}`;
+  }
+  document.getElementById("btnEnvoyerSMS").addEventListener("click",(e)=>{
+    const msg=buildSmsMessage(); if(!msg){e.preventDefault();return;}
+    e.currentTarget.setAttribute("href", smsHref(CONTACT_PHONE,msg));
+    setTimeout(()=>{ if(document.visibilityState==="visible"){ smsHint.style.display="block"; smsHint.innerHTML=`Si l’app SMS ne s’est pas ouverte, envoie un SMS au <strong>${CONTACT_PHONE}</strong> avec :<br><pre>${msg}</pre>`; } },1200);
+  });
 </script>
 </body>
 </html>
