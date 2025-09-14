@@ -253,6 +253,37 @@
 
   /* --- Lecture stricte du numéro d'étape depuis n'importe quel QR --- */
   function extractStepNum(raw){
+    function extractStepNum(raw){
+    const s = String(raw||"").trim();
+
+    // 1) Si c'est une URL -> on cherche dans query, chemin et hash
+    try{
+      const u = new URL(s);
+      // paramètres possibles: ?qr=, ?code=, ?step=, ?e=
+      for (const k of ["qr","code","step","e"]) {
+        const v = u.searchParams.get(k);
+        if (v) {
+          const m = String(v).toUpperCase().match(/(?:ENIGME[-\s]?)?([2-7])/);
+          if (m) return Number(m[1]);
+        }
+      }
+      // chercher dans le pathname ou le hash (#ENIGME-4, /ENIGME4/, /4, etc.)
+      const ph = (u.pathname + " " + u.hash).toUpperCase();
+      let m = ph.match(/ENIGME[-\s]?([2-7])/);
+      if (m) return Number(m[1]);
+      m = ph.match(/(?:^|\/)([2-7])(?:\/|$)/);
+      if (m) return Number(m[1]);
+    }catch(_){/* pas une URL */ }
+
+    // 2) Chaîne "normale" : on cherche partout, pas seulement en fin
+    const up = s.toUpperCase();
+    let m = up.match(/ENIGME[-\s]?([2-7])/); if (m) return Number(m[1]);
+    m = up.match(/\b(?:E|QR)[-\s]?([2-7])\b/); if (m) return Number(m[1]);
+    m = up.match(/\b([2-7])\b/); if (m) return Number(m[1]);
+
+    return null;
+  }
+
     // Accepte : ENIGME-4, ENIGME 4, ENIGME4, E4, QR4, ?qr=ENIGME-4, ?qr=4, juste "4", etc.
     const s = String(raw||"").trim();
     try{ const u=new URL(s); const q=u.searchParams.get("qr"); if(q){ const n = q.toUpperCase().match(/(?:ENIGME-?)?([2-7])$/); if(n) return Number(n[1]); } }catch(e){}
